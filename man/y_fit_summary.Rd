@@ -37,6 +37,8 @@ Summarises fixed effects, variance explained and an optional
 random-forest overlay for supported fitted models. Supports lm, glm, lmer,
 glmer, glmmTMB and brmsfit models. Use models fitted with lmerTest::lmer()
 to retain mixed-model p-values.
+For \code{brmsfit} models, \code{p} is 0 when the 95\% interval excludes zero and 1
+otherwise.
 }
 \examples{
 fit <- lm(mpg ~ wt + hp, data = mtcars)

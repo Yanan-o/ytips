@@ -25,6 +25,9 @@ library(ytips)
 dependencies listed in `Suggests`. Install the packages for each module you
 plan to use:
 
+When a function needs a missing optional package, an interactive R session
+asks whether to install it or stop the current call.
+
 ```r
 # Co-occurrence networks
 pak::pak(c("igraph", "Hmisc"))
@@ -38,6 +41,7 @@ pak::pak(c("piecewiseSEM", "DiagrammeR"))
 
 # Optional ordination helpers
 pak::pak(c("betapart", "rdacca.hp", "ggExtra", "ggplotify"))
+pak::pak("pmartinezarbizu/pairwiseAdonis")
 
 # Residual model diagnostics and OneDrive path helper
 install.packages(c("DHARMa", "fs"))

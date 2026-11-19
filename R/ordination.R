@@ -242,8 +242,8 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
 #' @param pairs.id Optional sample-pair identifiers separated by ' vs ' .
-#' @param output Output mode; see the function description.
-#' @return A ggplot object or a list containing results and plots.
+#' @return A named list with `beta_part.res`, the pairwise diversity
+#' components, and `plot`, a named list of two ggplot objects.
 #'
 #' @examples
 #' \dontrun{
@@ -259,7 +259,7 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 # 相同的β-diversity值，e.g., Bray-Curtis indices内部的四个机制可能不同，分为两大类：
 # subset patterns(nestedness, gradient) & substitution patterns(turnover, balanced)
 # row.names(spe) -> A; paste0(A[grepl('CK', A)], ' vs ', A[!grepl('CK', A)]) -> pairs.ck
-y_beta_part <- function(spe, trt, pairs.id = NULL, output = ''){
+y_beta_part <- function(spe, trt, pairs.id = NULL){
 
   yy_check_pkg("betapart")
 
@@ -286,7 +286,7 @@ y_beta_part <- function(spe, trt, pairs.id = NULL, output = ''){
       theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = c(.8, .95), legend.background = element_blank()) +
       theme(legend.key.size = unit(.16, 'in')) + ylim(0,1) + labs(fill = '', x = '', y = .y) }) -> p
 
-  if(output == 'all'){return(list('beta_part.res' = part.res, 'plot' = p))} else{p %>% return()}
+ return(list('beta_part.res' = part.res, 'plot' = p))
 }
 
 
@@ -304,16 +304,15 @@ y_beta_part <- function(spe, trt, pairs.id = NULL, output = ''){
 #' @param show.contri Cumulative contribution retained before grouping the
 #' remainder as Others .
 #' @param show.adonis Whether to add PERMANOVA results to the plot.
-#' @param output Output mode; see the function description.
 #' @param ... Additional arguments passed to underlying methods.
-#' @return A ggplot object or a list containing contribution results.
+#' @return A named list with `simper.res`, `simper.res.mean`, and `plot`.
 #'
 #' @family ordination
 #' @export
 #'
 
 y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
-                          show.contri = 0.7, show.adonis = TRUE, output = '', ... ){
+                          show.contri = 0.7, show.adonis = TRUE, ... ){
 
   if(is.null(cols)){RColorBrewer::brewer.pal(n = 9, "Set1") %>% scales::alpha(., .8) -> cols}
   if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt; factor(trt, levels = unique(trt)) -> trt}; data.frame(row.names(spe), trt) -> Trt
@@ -338,7 +337,7 @@ y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
     p + annotate("text", x = .6, y = Inf, label = adonis.txt[[1]], parse = TRUE, size = 2.8, hjust = 'left', vjust = 1.3) +
         geom_text(data = adonis.txt[[2]], aes(x = .6, y = .48*ylim + y, label = txt), size = 2.5, vjust = "bottom", hjust = 'left') -> p}
 
-  if(output == 'all'){return(list('simper.res' = simper.res, 'simper.res.mean' = simper.res.mean, 'plot' = p))} else{p %>% return()}
+  return(list('simper.res' = simper.res, 'simper.res.mean' = simper.res.mean, 'plot' = p))
 }
 
 
@@ -348,14 +347,14 @@ y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
-#' @param output Output mode; see the function description.
-#' @return A ggplot object or a list containing indicator-species results.
+#' @return A named list with `indval.res`, the indicator-species significance
+#' table, and `plot`, a ggplot object.
 #'
 #' @family ordination
 #' @export
 #'
 
-y_beta_indispecies <- function(spe, trt, output = ''){
+y_beta_indispecies <- function(spe, trt){
   # $str是IndVal值, $A是平均丰度，$B是频率：str = sqrt(A * B)
 
   if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt; factor(trt, levels = unique(trt)) -> trt}
@@ -371,7 +370,7 @@ y_beta_indispecies <- function(spe, trt, output = ''){
     scale_color_manual('p-value', values = c("grey", "red"), labels = c("Not sig.", "p < 0.05")) + theme_minimal() + labs(x = '', y = '') +
     theme(axis.text = element_text(colour = 1), axis.text.x = element_text(angle = 45, hjust = 1), legend.key.size = unit(.16, "in")) -> p
 
-  if(output == 'all'){return(list('indval.res' = indval.res[[2]], 'plot' = p))} else{p %>% return()}
+  return(list('indval.res' = indval.res[[2]], 'plot' = p))
 }
 
 
@@ -394,6 +393,8 @@ y_beta_indispecies <- function(spe, trt, output = ''){
 #'
 
 yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('CK', ''), xylim = 1, rr.inc = .05, ...){
+
+  yy_check_pkg("pairwiseAdonis", 'pak::pak("pmartinezarbizu/pairwiseAdonis")')
 
   if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt}; as.matrix(trt) -> trt
   spe.dist.bray <- vegan::vegdist(spe, method = "bray") # Bray-Curtis本身为相对距离不需要scale

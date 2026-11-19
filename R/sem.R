@@ -37,7 +37,8 @@ y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.
 
       if(is.null(sem.data)){lme4::getData(fit) -> df} else{sem.data -> df}
       getCall(fit) %>% deparse1() %>%  str_replace(., "data = .*,", "data = df,") %>% paste0(",") -> main_fit
-      reformulas::findbars(stats::formula(fit)) %>% as.character() %>% paste0(" + (", .,")") -> random
+      reformulas::findbars(stats::formula(fit)) %>% as.character() -> random
+      if(length(random) == 0){'' -> random} else{paste0(" + (", random, ")", collapse = '') -> random}
 
       all.vars(stats::formula(fit, fixed.only = T))[-1] -> vars.x
       vars.x[order(factor(vars.x, levels = vars.x))] -> x
@@ -108,7 +109,7 @@ y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.
 #'
 
 y_psem_formula_update <- function(sem.formula, sem.data, id = NULL, str = NULL){
-      # id = c(3,2,6,17);  str = c("-x1+x2", '+', '', '&'); see y_fit_update
+      # id = c(3,2,6,17); str = c("-x1+x2", '+', '', '&')
 
       if(is.list(sem.formula)){sem.formula$sem.data -> sem.data; sem.formula$sem.formula -> sem.formula}
       if(is.null(str)){rep('', time = length(id)) -> str}; sem.data -> df
@@ -122,7 +123,8 @@ y_psem_formula_update <- function(sem.formula, sem.data, id = NULL, str = NULL){
       for(i in id.corr){'' -> sem.f_id[i]}
       for(j in id.up){c(sem.f_id, str[match(j, id)]) -> sem.f_id}
       for(k in id.fit){if(str[match(k, id)] == ''){'' -> sem.f_id[k]} else{
-        eval(parse(text = sem.f_id[k] %>% str_replace(',$', ''))) %>% y_fit_update(str = str[match(k, id)]) %>%
+        eval(parse(text = sem.f_id[k] %>% str_replace(',$', ''))) %>%
+          y_fit_update(str = str[match(k, id)]) %>%
           getCall() %>% deparse1() %>% paste0(., ',') -> fit.f; ifelse(grepl('\\+', fit.f), fit.f, '') -> sem.f_id[k]}
       }
 

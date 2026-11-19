@@ -234,14 +234,14 @@ y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show
 #' labels in column 2.
 #' @param fill.lim Optional limits for the fill scale.
 #' @param cols Optional color values.
-#' @param output Output mode; see the function description.
-#' @return A ggplot object or a list containing partial plots.
+#' @return A named list containing the two-predictor surface plot (`xxp`)
+#' and the combined partial plots (`partial.p`).
 #'
 #' @family plotting
 #' @export
 #'
 
-y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("steelblue2", "white", "#FF1493"), output = ""){
+y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("steelblue2", "white", "#FF1493")){
     # fits are same to y_fit_summary, but only two x permits
 
     fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res; fit.res$df -> df
@@ -276,94 +276,75 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
       geom_line(data = df_pre.x2, aes(x = x2, y = ypre), color = "red", linewidth = 1) + theme_classic() -> p2
     p1 + p2 -> p # partial ypre of x1 or x2 (median)
 
-    if(output == ""){xxplot %>% return()} else{list("partial.p" = p, "xxp" = xxplot) %>% return()}
+  list("partial.p" = p, "xxp" = xxplot) %>% return()
   }
 
 
 
-#' @title Plot a partial residual relationship
-#' @description Plots residualised relationships. The focal and response
-#' variables are residualized against the remaining predictors before their
-#' relationship is plotted.
+#' @title Plot a partial residual relationship from a fitted model
+#' @description Residualizes the response and one focal predictor against all
+#' other fixed-effect predictors in `fit`, then plots their residual
+#' relationship. Random effects in `fit` are retained when the component
+#' models are fitted.
 #'
-#' @param df Data frame; it must also contain `block` when `fit = "lmer"`.
-#' @param y Name of the response column.
-#' @param x Character vector of predictor column names; include `x.fixed`.
-#' @param x.fixed Name of the predictor whose partial relationship is plotted.
-#' @param model Model type. `"lmer"` fits a random intercept for `block`;
-#' any other value fits an ordinary `lm`.
-#' @param show.p Significance threshold used for display.
-#' @return A list containing residual data and a ggplot object.
+#' @param fit A fitted `lm` or `lmer` model with at least one numeric
+#' fixed-effect predictor.
+#' @param x.fixed A single character string naming the numeric fixed-effect
+#' predictor whose partial relationship is plotted.
+#' @param ... Additional arguments passed to [y_fit_linesplot()], such as
+#' `show.p`, `show.se`, `point.size`, or `line.size`.
+#' @return A named list with `df_resid`, the model data and residual columns,
+#' and `plot`, a ggplot object.
 #'
 #' @family plotting
 #' @export
 #'
 
-y_partial_plot <- function(df, y = "", x = "", x.fixed = "", model = "lmer", show.p = 0.05){
+y_fit_partial_plot <- function(fit, x.fixed = "", ...){
 
-  paste0(y, " ~ ", paste0(x[x != x.fixed], collapse = " + ")) -> fit_formula1
-  paste0(x.fix, " ~ ", paste0(x[x != x.fixed], collapse = " + ")) -> fit_formula2
+  stats::model.frame(fit) %>% as_tibble() -> df
+  all.vars(stats::formula(fit, fixed.only = TRUE))[1] -> y
+  stats::update(fit, formula. = stats::as.formula(paste0('. ~ . - ', x.fixed))) -> fit1
+  stats::update(fit1, formula. = stats::as.formula(paste0(x.fixed, ' ~ .'))) -> fit2
 
-  if(fit == "lmer"){paste0(fit_formula1, " + (1|block)") %>% as.formula() %>% lmer(., data = df) -> fit1;
-    paste0(fit_formula2, " + (1|block)") %>% as.formula() %>% lmer(., data = df) -> fit2} else{
-      fit_formula1 %>% as.formula %>% lm(., data = df) -> fit1;
-      fit_formula2 %>% as.formula %>% lm(., data = df) -> fit2}
-
-  data.frame(stats::resid(fit1), stats::resid(fit2)) %>% rename_with(~c(paste0("residuals.", y), paste0("residuals.", x.fix))) -> df_residuals
-  if(fit == "lmer"){df_residuals %>% mutate(block = df$block) -> df_residuals}
+  df %>% mutate(residual.y = stats::resid(fit1), residual.x.fixed = stats::resid(fit2)) -> df_residuals
 
   # plot
-  lm(df_residuals[,1] ~ df_residuals[,2]) -> fit
-  summary(fit)$r.squared %>% round(2) -> RR ; anova(fit)$"Pr(>F)"[1] %>% round(2) -> p
-  data.frame(xmin = min(df_residuals[,2]), ymax = max(df_residuals[,1]),
-             txt = paste0("R^2~`=`~", RR, "~~~italic(p)~`=`~", p)) -> lm_txt
-
-  df_residuals %>%
-    ggplot(., aes(x = .[[2]], y = .[[1]])) + geom_point(color = "grey20", size = 2) +
-    geom_smooth(method = "lm", se = T, color = 1, fill = "grey", size = 0.8, lty =  if_else(p < show.p, 1, 2)) +
-    geom_text(data = lm_txt, aes(x = xmin, y = ymax), label = lm_txt$txt, hjust = "left", parse = T,  size = 2.8) +
-    labs(y = paste0("Residuals of ", y), x = paste0("Residuals of ", x.fix)) + theme_classic() -> resid.plot
-
-  return(list("df_resid" = df_residuals, "plot" = resid.plot))
+  lm(residual.y ~ residual.x.fixed, data = df_residuals) -> fit_residual # 此处不需要再加random
+  fit_residual %>% y_fit_linesplot(...) + labs(y = paste0("Residuals of ", y), x = paste0("Residuals of ", x.fixed)) -> p
+  return(list("df_resid" = df_residuals, "plot" = p))
 }
 
 
 
 #' @title Decompose explanatory variation
-#' @description Partitions explanatory power between two response components.
+#' @description Compares the fixed-effect variation explained for two response
+#' components and reports their relative explanatory power. The components are
+#' fitted with the same fixed- and random-effect structure as `fit`.
 #'
-#' @param df Data frame containing `block`, `x.fixed`, `y`, `y1`, and `y2`.
-#' @param y1y2.name Character vector of two display labels for `y1` and `y2`.
-#' @param output Output mode; see the function description.
-#' @return A ggplot object or a list containing its data.
+#' @param fit A fitted `lm` or `lmer` model.
+#' @param y1,y2 Single character strings naming the two numeric response
+#' components. Both columns must be present in the data used to fit `fit`.
+#' @param name.yy Character vector of two display labels for `y1` and `y2`.
+#' @return A named list with `df_p`, containing the relative explanatory power
+#' and labels, and `plot`, a ggplot object.
 #'
 #' @family plotting
 #' @export
 #'
 
-y_decomposition_plot <- function(df, y1y2.name = c("y1", "y2"), output = "plot"){
-  # df includes block, x.fixed, y, y1, y2
-  # y ~ x.fixed + (1|block); decomposing y into y1, y2
+y_fit_decomposition_plot <- function(fit, y1 = "", y2 = "", name.yy = c(y1, y2)){
 
-  lmer(y ~ x.fixed + (1|block), data = df) -> fit1
-  stats::model.matrix(fit1) %*% fixef(fit1) -> fit_pre1 # same to: stats::predict(fit1, re.form = NA)
-  fit_pre1 %>% var() -> var_fixef; var_fixef
-
-  VarCorr(fit1) %>% as.data.frame() -> var_rb; var_rb
-  var_rb$vcov[1] + var_rb$vcov[2] -> var_Error; var_Error
-  var_fixef + var_Error -> sum_var_FD; sum_var_FD
-
-  lmer(y1 ~ x.fixed + (1|block), data = df) -> fit2
-  lmer(y2 ~ x.fixed + (1|block), data = df) -> fit3
-  stats::model.matrix(fit2) %*% fixef(fit2) %>% var() -> var_fit_pre2
-  stats::model.matrix(fit3) %*% fixef(fit3) %>% var() -> var_fit_pre3
-
-  expla_inter = var_fit_pre2/sum_var_FD
-  expla_intra = var_fit_pre3/sum_var_FD
-
-  rbind(
-    expla_inter/(expla_inter + expla_intra), expla_intra/(expla_inter + expla_intra)) %>%
-    data.frame(explanatory.power = .) %>% mutate(name = y1y2.name) -> df_p
+  var_pred <- function(model){
+    if(inherits(model, "merMod")){stats::predict(model, re.form = NA) -> p} else{stats::predict(model) -> p}
+    var(p)
+  }
+  if(inherits(fit, "merMod")){getData(fit) -> df} else{eval(fit$call$data, environment(stats::formula(fit))) -> df}
+  stats::update(fit, formula. = stats::as.formula(paste0(y1, ' ~ .')), data = df) -> fit_y1
+  stats::update(fit, formula. = stats::as.formula(paste0(y2, ' ~ .')), data = df) -> fit_y2
+  var_total <- var_pred(fit) + if(inherits(fit, "merMod")){sum(as.data.frame(VarCorr(fit))$vcov)} else{stats::sigma(fit)^2}
+  var_y <- vapply(list(fit_y1, fit_y2), var_pred, numeric(1))
+  data.frame(explanatory.power = var_y/sum(var_y), name = name.yy) -> df_p
 
   ggplot(df_p, aes(x = .3, y = explanatory.power, fill = rev(name))) +
     geom_bar(stat = "identity", width = .5, alpha = .5) +
@@ -371,10 +352,8 @@ y_decomposition_plot <- function(df, y1y2.name = c("y1", "y2"), output = "plot")
     scale_fill_manual("", values = rev(c("darkgreen", "darkorange2"))) +
     coord_flip() +  labs(y = "Relative explanatory power (%)") + xlim(c(0, .8)) +
     theme_classic() + theme(legend.position = "none") + theme(plot.margin = margin(-2, 0, 0, 0)) +
-    theme(axis.line.y = element_blank(), plot.background = element_blank()) +
-    theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.title.y = element_blank()) -> p
-
-  if(output == "all"){list(df_p, p) %>% return()} else{p %>% return()}
+    theme(axis.line.y = element_blank(), plot.background = element_blank()) + no_axis_y -> p
+  list("df_p" = df_p, "plot" = p) %>% return()
 }
 
 

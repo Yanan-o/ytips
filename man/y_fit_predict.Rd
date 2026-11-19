@@ -7,7 +7,8 @@
 y_fit_predict(fit, newdata = NULL)
 }
 \arguments{
-\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer} or \code{glmer} model.}
+\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit}
+model.}
 
 \item{newdata}{Optional data frame with the same predictor names as the model.}
 }
@@ -15,9 +16,8 @@ y_fit_predict(fit, newdata = NULL)
 A data frame containing fitted values and intervals.
 }
 \description{
-Returns observed data with fitted values and 95\% confidence or
-bootstrap intervals. Linear and generalized linear models use confidence
-intervals. Mixed models use 200 parametric bootstraps.
+Returns observed data with fitted values and 95\% confidence
+intervals for supported models. Random effects are excluded from prediction.
 }
 \seealso{
 Other fitting:

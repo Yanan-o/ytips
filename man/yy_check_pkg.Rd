@@ -4,18 +4,23 @@
 \alias{yy_check_pkg}
 \title{Check and report missing packages}
 \usage{
-yy_check_pkg(pkg, install.hint = NULL)
+yy_check_pkg(pkg, install.hint = NULL, ask = interactive())
 }
 \arguments{
 \item{pkg}{Package name or character vector of package names.}
 
 \item{install.hint}{Optional installation command.}
+
+\item{ask}{Whether to ask before installing. Defaults to \code{interactive()}.}
 }
 \value{
 Invisibly returns \code{TRUE} when all packages are available.
 }
 \description{
-Internal helper that stops with an actionable install command.
+Checks whether required packages are installed. In an
+interactive R session, missing packages trigger a prompt to install them or
+stop the current call. Non-interactive sessions stop with the installation
+command.
 }
 \seealso{
 Other utilities:

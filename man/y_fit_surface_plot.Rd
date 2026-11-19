@@ -8,8 +8,7 @@ y_fit_surface_plot(
   fit,
   fig.name = NULL,
   fill.lim = NULL,
-  cols = c("steelblue2", "white", "#FF1493"),
-  output = ""
+  cols = c("steelblue2", "white", "#FF1493")
 )
 }
 \arguments{
@@ -21,11 +20,10 @@ labels in column 2.}
 \item{fill.lim}{Optional limits for the fill scale.}
 
 \item{cols}{Optional color values.}
-
-\item{output}{Output mode; see the function description.}
 }
 \value{
-A ggplot object or a list containing partial plots.
+A named list containing the two-predictor surface plot (\code{xxp})
+and the combined partial plots (\code{partial.p}).
 }
 \description{
 Evaluates a fitted model over two numeric predictors.
@@ -36,11 +34,11 @@ Other plotting:
 \code{\link[=theme_y]{theme_y()}},
 \code{\link[=y_classplot]{y_classplot()}},
 \code{\link[=y_corrplot]{y_corrplot()}},
-\code{\link[=y_decomposition_plot]{y_decomposition_plot()}},
 \code{\link[=y_fit_addline]{y_fit_addline()}},
 \code{\link[=y_fit_classplot]{y_fit_classplot()}},
+\code{\link[=y_fit_decomposition_plot]{y_fit_decomposition_plot()}},
 \code{\link[=y_fit_linesplot]{y_fit_linesplot()}},
-\code{\link[=y_ggsave]{y_ggsave()}},
-\code{\link[=y_partial_plot]{y_partial_plot()}}
+\code{\link[=y_fit_partial_plot]{y_fit_partial_plot()}},
+\code{\link[=y_ggsave]{y_ggsave()}}
 }
 \concept{plotting}

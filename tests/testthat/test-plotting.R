@@ -35,40 +35,64 @@ test_that("partial plots support lm and lmer model options", {
   )
   df$response <- df$x1 + 0.3 * df$x2 + stats::rnorm(24)
 
-  lm_result <- y_partial_plot(
-    df,
-    y = "response",
-    x = c("x1", "x2"),
-    x.fix = "x1",
-    fit = "lm"
+  lm_fit <- stats::lm(response ~ x1 + x2, data = df)
+  lm_result <- y_fit_partial_plot(
+    lm_fit,
+    x.fixed = "x1"
   )
   expect_s3_class(lm_result$plot, "ggplot")
 
-  lmer_result <- suppressWarnings(y_partial_plot(
-    df,
-    y = "response",
-    x = c("x1", "x2"),
-    x.fix = "x1",
-    fit = "lmer"
+  lmer_fit <- lmerTest::lmer(
+    response ~ x1 + x2 + (1 | block),
+    data = df
+  )
+  lmer_result <- suppressWarnings(y_fit_partial_plot(
+    lmer_fit,
+    x.fixed = "x1"
   ))
   expect_s3_class(lmer_result$plot, "ggplot")
+  expect_true(all(c("residual.y", "residual.x.fixed") %in%
+    names(lmer_result$df_resid)))
 })
 
-test_that("decomposition plots use the documented column names", {
+test_that("decomposition plots accept custom response columns", {
   set.seed(2)
   df <- data.frame(
     block = rep(1:6, each = 4),
-    x.fixed = stats::rnorm(24),
-    y = stats::rnorm(24),
-    y1 = stats::rnorm(24),
-    y2 = stats::rnorm(24)
+    pred1 = stats::rnorm(24),
+    pred2 = stats::rnorm(24)
+  )
+  df$response <- df$pred1 + 0.5 * df$pred2 + stats::rnorm(24)
+  df$between <- df$pred1 + stats::rnorm(24, sd = 0.1)
+  df$within <- df$pred2 + stats::rnorm(24, sd = 0.1)
+  lmer_fit <- lmerTest::lmer(
+    response ~ pred1 + pred2 + (1 | block),
+    data = df
   )
 
-  result <- suppressWarnings(y_decomposition_plot(
-    df,
-    y1y2.name = c("component 1", "component 2"),
-    output = "all"
+  result <- suppressWarnings(y_fit_decomposition_plot(
+    lmer_fit,
+    y1 = "between",
+    y2 = "within",
+    name.yy = c("component 1", "component 2")
   ))
-  expect_s3_class(result[[2]], "ggplot")
-  expect_equal(nrow(result[[1]]), 2)
+  expect_s3_class(result$plot, "ggplot")
+  expect_equal(nrow(result$df_p), 2)
+  expect_equal(result$df_p$name, c("component 1", "component 2"))
+  expect_equal(sum(result$df_p$explanatory.power), 1)
+
+  lm_result <- y_fit_decomposition_plot(
+    stats::lm(response ~ pred1 + pred2, data = df),
+    y1 = "between",
+    y2 = "within"
+  )
+  expect_s3_class(lm_result$plot, "ggplot")
+  expect_equal(sum(lm_result$df_p$explanatory.power), 1)
+
+  interaction_result <- y_fit_decomposition_plot(
+    stats::lm(response ~ pred1 * pred2, data = df),
+    y1 = "between",
+    y2 = "within"
+  )
+  expect_s3_class(interaction_result$plot, "ggplot")
 })

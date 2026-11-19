@@ -56,22 +56,52 @@ yy_pkg_available <- function(pkg){
 
 
 #' @title Check and report missing packages
-#' @description Internal helper that stops with an actionable install command.
+#' @description Checks whether required packages are installed. In an
+#' interactive R session, missing packages trigger a prompt to install them or
+#' stop the current call. Non-interactive sessions stop with the installation
+#' command.
 #'
 #' @param pkg Package name or character vector of package names.
 #' @param install.hint Optional installation command.
+#' @param ask Whether to ask before installing. Defaults to `interactive()`.
 #' @return Invisibly returns `TRUE` when all packages are available.
 #' @family utilities
 #' @keywords internal
 #'
 
-yy_check_pkg <- function(pkg, install.hint = NULL){
+yy_check_pkg <- function(pkg, install.hint = NULL, ask = interactive()){
   missing <- pkg[!vapply(pkg, yy_pkg_available, logical(1))]
   if(length(missing) > 0){
     hint <- if(is.null(install.hint)){
       paste0('install.packages(c(', paste0('"', missing, '"', collapse = ', '), '))')
     } else{
       install.hint
+    }
+    if(isTRUE(ask)){
+      choice <- utils::menu(
+        c("Install now", "Do not install"),
+        title = paste0("Package(s) not installed: ", paste0(missing, collapse = ", "))
+      )
+      if(choice == 1L){
+        message("Installing package dependencies with:\n", hint)
+        tryCatch(
+          eval(parse(text = hint), envir = parent.frame()),
+          error = function(e){
+            rlang::abort(c(
+              "Package installation failed.",
+              x = conditionMessage(e),
+              i = paste0("Install manually with: ", hint)
+            ))
+          }
+        )
+        missing <- pkg[!vapply(pkg, yy_pkg_available, logical(1))]
+        if(length(missing) == 0){return(invisible(TRUE))}
+        rlang::abort(c(
+          "Package installation did not make all required packages available.",
+          x = paste0("Still missing: ", paste0(missing, collapse = ", ")),
+          i = paste0("Install manually with: ", hint)
+        ))
+      }
     }
     rlang::abort(c(
       paste0("Package(s) required but not installed: ", paste0(missing, collapse = ", ")),

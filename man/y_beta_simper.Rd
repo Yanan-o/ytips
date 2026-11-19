@@ -12,7 +12,6 @@ y_beta_simper(
   ylim = 1,
   show.contri = 0.7,
   show.adonis = TRUE,
-  output = "",
   ...
 )
 }
@@ -32,12 +31,10 @@ remainder as Others .}
 
 \item{show.adonis}{Whether to add PERMANOVA results to the plot.}
 
-\item{output}{Output mode; see the function description.}
-
 \item{...}{Additional arguments passed to underlying methods.}
 }
 \value{
-A ggplot object or a list containing contribution results.
+A named list with \code{simper.res}, \code{simper.res.mean}, and \code{plot}.
 }
 \description{
 Calculates species contributions to Bray-Curtis dissimilarity.

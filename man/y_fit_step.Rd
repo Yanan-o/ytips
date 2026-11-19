@@ -7,7 +7,7 @@
 y_fit_step(fit, step = "aicc", output = "all")
 }
 \arguments{
-\item{fit}{A fitted \code{lm} or \code{lmer} model object.}
+\item{fit}{A fitted \code{lm}, \code{lmer} or \code{glmer} model object.}
 
 \item{step}{Model-selection rule: AICc, p < 0.1, or p < 0.05.}
 

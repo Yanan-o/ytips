@@ -4,17 +4,16 @@
 \alias{y_beta_indispecies}
 \title{Identify indicator species}
 \usage{
-y_beta_indispecies(spe, trt, output = "")
+y_beta_indispecies(spe, trt)
 }
 \arguments{
 \item{spe}{A community matrix with samples in rows.}
 
 \item{trt}{Treatment grouping vector.}
-
-\item{output}{Output mode; see the function description.}
 }
 \value{
-A ggplot object or a list containing indicator-species results.
+A named list with \code{indval.res}, the indicator-species significance
+table, and \code{plot}, a ggplot object.
 }
 \description{
 Tests indicator species with multipatt.

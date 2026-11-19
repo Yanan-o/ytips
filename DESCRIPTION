@@ -25,7 +25,6 @@ Imports:
     patchwork (>= 1.2.0),
     RColorBrewer,
     ggforce,
-    pairwiseAdonis,
     indicspecies,
     permute,
     magrittr,
@@ -35,6 +34,7 @@ Imports:
     lmerTest,
     reformulas,
     performance,
+    insight,
     vegan,
     MuMIn,
     emmeans
@@ -55,6 +55,7 @@ Suggests:
     DiagrammeR,
     fitdistrplus,
     phyloseq,
+    pairwiseAdonis,
     SpiecEasi,
     igraph,
     Hmisc,

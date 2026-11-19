@@ -4,7 +4,7 @@
 \alias{y_beta_part}
 \title{Partition beta diversity}
 \usage{
-y_beta_part(spe, trt, pairs.id = NULL, output = "")
+y_beta_part(spe, trt, pairs.id = NULL)
 }
 \arguments{
 \item{spe}{A community matrix with samples in rows.}
@@ -12,11 +12,10 @@ y_beta_part(spe, trt, pairs.id = NULL, output = "")
 \item{trt}{Treatment grouping vector.}
 
 \item{pairs.id}{Optional sample-pair identifiers separated by ' vs ' .}
-
-\item{output}{Output mode; see the function description.}
 }
 \value{
-A ggplot object or a list containing results and plots.
+A named list with \code{beta_part.res}, the pairwise diversity
+components, and \code{plot}, a named list of two ggplot objects.
 }
 \description{
 Partitions Sorensen and Bray-Curtis beta diversity. Sorensen

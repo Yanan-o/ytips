@@ -65,6 +65,39 @@ test_that("dependency checks provide actionable installation commands", {
   expect_error(ytips:::yy_check_sem_dependencies(), "piecewiseSEM")
 })
 
+test_that("dependency checks offer an interactive installation choice", {
+  marker <- tempfile()
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) file.exists(marker),
+    .package = "ytips"
+  )
+
+  with_mocked_bindings(
+    menu = function(...) 1L,
+    .package = "utils",
+    expect_true(ytips:::yy_check_pkg(
+      "example.package",
+      install.hint = paste0("file.create(", shQuote(marker), ")"),
+      ask = TRUE
+    ))
+  )
+  expect_true(file.exists(marker))
+
+  unlink(marker)
+  with_mocked_bindings(
+    menu = function(...) 2L,
+    .package = "utils",
+    expect_error(
+      ytips:::yy_check_pkg(
+        "example.package",
+        install.hint = "install.packages('example.package')",
+        ask = TRUE
+      ),
+      "Install with"
+    )
+  )
+})
+
 test_that("network dependency checks follow the selected method", {
   local_mocked_bindings(
     yy_pkg_available = function(pkg) pkg %in% c("phyloseq", "igraph"),
@@ -98,6 +131,7 @@ test_that("public entry points fail early with installation instructions", {
   expect_error(y_psem_boot(NULL, NULL), "piecewiseSEM")
   expect_error(y_psem_step(NULL), "piecewiseSEM")
   expect_error(y_ps_to_spe(NULL), "bioc::phyloseq")
+  expect_error(ytips:::yy_adonis_summary(NULL), "pairwiseAdonis")
   expect_error(y_beta_part(NULL), "betapart")
   expect_error(y_rdacca_hp(NULL, NULL), "rdacca.hp")
   expect_error(

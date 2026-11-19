@@ -7,21 +7,20 @@
 y_fit_update(fit, str = "", x.order = NULL)
 }
 \arguments{
-\item{fit}{A fitted \code{lmer} model whose random-effect structure is retained.}
+\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer} or \code{glmmTMB} model.}
 
-\item{str}{Formula update text, such as + x1 - x2 .}
+\item{str}{Formula update text, such as \code{"+ x1 - x2"}.}
 
-\item{x.order}{Optional predictor display order.}
+\item{x.order}{Optional character vector giving term order. Defaults to the
+column order in the model data.}
 }
 \value{
-An updated fitted model.
+An updated fitted model with one model fit.
 }
 \description{
-Updates a fixed-effect formula with compact text while
-retaining random effects. str accepts compact formula updates such as "+ x1
-\itemize{
-\item x2".
-}
+Updates a model formula with compact text while retaining the
+model's fixed-effect terms and random effects. Fixed-effect terms are ordered
+by their first appearance in \code{x.order}, and random effects are placed last.
 }
 \seealso{
 Other fitting:

@@ -26,12 +26,12 @@ Other plotting:
 \code{\link[=theme_y]{theme_y()}},
 \code{\link[=y_classplot]{y_classplot()}},
 \code{\link[=y_corrplot]{y_corrplot()}},
-\code{\link[=y_decomposition_plot]{y_decomposition_plot()}},
 \code{\link[=y_fit_addline]{y_fit_addline()}},
 \code{\link[=y_fit_classplot]{y_fit_classplot()}},
+\code{\link[=y_fit_decomposition_plot]{y_fit_decomposition_plot()}},
 \code{\link[=y_fit_linesplot]{y_fit_linesplot()}},
+\code{\link[=y_fit_partial_plot]{y_fit_partial_plot()}},
 \code{\link[=y_fit_surface_plot]{y_fit_surface_plot()}},
-\code{\link[=y_ggsave]{y_ggsave()}},
-\code{\link[=y_partial_plot]{y_partial_plot()}}
+\code{\link[=y_ggsave]{y_ggsave()}}
 }
 \concept{plotting}

@@ -28,6 +28,8 @@ y_descdist <- function(x, discrete = FALSE){
 #' random-forest overlay for supported fitted models. Supports lm, glm, lmer,
 #' glmer, glmmTMB and brmsfit models. Use models fitted with lmerTest::lmer()
 #' to retain mixed-model p-values.
+#' For `brmsfit` models, `p` is 0 when the 95% interval excludes zero and 1
+#' otherwise.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
 #' model object.
@@ -49,19 +51,15 @@ y_descdist <- function(x, discrete = FALSE){
 #'
 
 y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.inc = c(.08, 0), output = 'p', diagnostics = TRUE){
-    # input should be fit, lm, glm, lmer, glmer, glmmTMB or brm [s(x, k = 3) is ok]
 
     if(isTRUE(diagnostics)){yy_check_pkg("DHARMa")}
     if(show.random.forest){yy_check_random_forest_dependencies()}
 
     if(inherits(fit, 'brmsfit')){
-
         brms::fixef(fit) %>% data.frame() %>% rownames_to_column("x") %>%
           rename_with(~ c("x", "Estimate", "std.Error", "Q2.5", "Q97.5")) %>% .[-1,] %>%
           mutate(p = ifelse(Q2.5 <= 0 & Q97.5 >= 0, 1, 0)) -> Est.txt
-        fit$data %>% select(all_of(all.vars(fit$formula$formula))) -> df
-
-    } else { if(inherits(fit, 'glmmTMB')){
+    } else{ if(inherits(fit, 'glmmTMB')){
       summary(fit)$coefficients$cond -> coefficients
     } else { if(inherits(fit, 'lmerMod')){
       summary(lmerTest::as_lmerModLmerTest(fit))$coefficients -> coefficients
@@ -69,7 +67,8 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
       coefficients %>% data.frame() %>% rownames_to_column("x") -> Est.txt
       names(Est.txt)[grepl("rror", names(Est.txt))] <- "std.Error"; names(Est.txt)[grepl("^Pr", names(Est.txt))] <- "p";
       Est.txt[-1,] %>% mutate(Q2.5 = Estimate - 1.96*std.Error, Q97.5 = Estimate + 1.96*std.Error) -> Est.txt
-      stats::model.frame(fit) -> df }
+    }
+    insight::get_data(fit) -> df
 
   # p_value
     df %>% select(where(~ !is.numeric(.))) %>% names() -> x.name.sub
@@ -116,11 +115,11 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 
 
 #' @title Generate fitted values and confidence intervals
-#' @description Returns observed data with fitted values and 95% confidence or
-#' bootstrap intervals. Linear and generalized linear models use confidence
-#' intervals. Mixed models use 200 parametric bootstraps.
+#' @description Returns observed data with fitted values and 95% confidence
+#' intervals for supported models. Random effects are excluded from prediction.
 #'
-#' @param fit A fitted `lm`, `glm`, `lmer` or `glmer` model.
+#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
+#' model.
 #' @param newdata Optional data frame with the same predictor names as the model.
 #' @return A data frame containing fitted values and intervals.
 #'
@@ -129,26 +128,12 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 #'
 
 y_fit_predict <- function(fit, newdata = NULL){
-    # fit cloud be lm, glm, lmer, glmer, glmmTMB or brm [s(x, k = 3) is ok]
-
-    if(inherits(fit, 'brmsfit')){
-      if(is.null(newdata)){fit$data %>% select(all_of(all.vars(stats::formula(fit$formula)))) -> df} else{newdata -> df}
-        stats::fitted(fit, newdata = newdata, re_formula = NA, type = "response") %>% data.frame() %>%
-          rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>% select(!ypre.se) -> ypre
-          df %>% cbind(ypre) %>% as_tibble() -> df.pre   } else{
-
-          if(is.null(newdata)){stats::model.frame(fit) -> df} else{newdata -> df}
-          if(inherits(fit, c('lm', 'glm'))){
-            stats::predict(fit, newdata = newdata, type = "response", interval = "confidence", level = 0.95) %>%
-            data.frame() %>% rename_with(~c("ypre", "ypre.Q2.5", "ypre.Q97.5")) -> ypre
-            df %>% cbind(ypre) %>% as_tibble() -> df.pre } else{
-            boot_fun <- function(fit){stats::predict(fit, newdata = newdata, re.form = NA, type = "response")}
-            lme4::bootMer(fit, seed = 123, FUN = boot_fun, nsim = 200) -> boot_res
-            df %>% mutate(ypre = stats::predict(fit, newdata = newdata, re.form = NA, type = "response"),
-                          ypre.Q2.5 = apply(boot_res$t, 2, function(x){stats::quantile(x, na.rm = TRUE, .025)}),
-                          ypre.Q97.5 =  apply(boot_res$t, 2, function(x){stats::quantile(x, na.rm = TRUE, .975)})) %>% as_tibble() -> df.pre} }
-    return(df.pre)
-    }
+    if(is.null(newdata)){insight::get_data(fit) -> df} else{newdata -> df}
+    insight::get_predicted(fit, data = df, predict = 'response', ci = .95, re_formula = NA) %>%
+      as.data.frame() %>% select(1:4) %>% rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>%
+      select(!ypre.se) -> ypre
+    df %>% cbind(ypre) %>% as_tibble() %>% return()
+  }
 
 
 
@@ -157,7 +142,7 @@ y_fit_predict <- function(fit, newdata = NULL){
 #' p-values. A warning is issued when more than 255 candidate models are
 #' requested. output = "best_fit" returns only the selected model.
 #'
-#' @param fit A fitted `lm` or `lmer` model object.
+#' @param fit A fitted `lm`, `lmer` or `glmer` model object.
 #' @param step Model-selection rule: AICc, p < 0.1, or p < 0.05.
 #' @param output Output mode; see the function description.
 #' @return The best model or a list of candidate-model results.
@@ -167,7 +152,7 @@ y_fit_predict <- function(fit, newdata = NULL){
 #'
 
 y_fit_step <- function(fit, step = "aicc", output = "all"){
-      # fit could be lmer, glmer; in output No.1, 2 is full_fit & best_fit
+      # in output No.1, 2 is full_fit & best_fit
       # step could be '0.1' or '0.05' to catch differ methods basing p-values of x;
 
       all.vars(stats::formula(fit, fixed.only = T))[-1] -> vars.x
@@ -204,31 +189,40 @@ y_fit_step <- function(fit, step = "aicc", output = "all"){
 
 
 #' @title Update a model formula while preserving random effects
-#' @description Updates a fixed-effect formula with compact text while
-#' retaining random effects. str accepts compact formula updates such as "+ x1
-#' - x2".
+#' @description Updates a model formula with compact text while retaining the
+#' model's fixed-effect terms and random effects. Fixed-effect terms are ordered
+#' by their first appearance in `x.order`, and random effects are placed last.
 #'
-#' @param fit A fitted `lmer` model whose random-effect structure is retained.
-#' @param str Formula update text, such as + x1 - x2 .
-#' @param x.order Optional predictor display order.
-#' @return An updated fitted model.
+#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer` or `glmmTMB` model.
+#' @param str Formula update text, such as `"+ x1 - x2"`.
+#' @param x.order Optional character vector giving term order. Defaults to the
+#' column order in the model data.
+#' @return An updated fitted model with one model fit.
 #'
 #' @family fitting
 #' @export
 #'
 
 y_fit_update <- function(fit, str = '', x.order = NULL){
+  if(inherits(fit, "merMod")){getData(fit) -> df} else{eval(fit$call$data, environment(stats::formula(fit))) -> df}
+  if(is.null(df)){stats::model.frame(fit) -> df}; if(is.null(x.order)){names(df) -> x.order}
 
-      getData(fit) %>% as_tibble() -> df; if(is.null(x.order)){names(df) -> x.order}
-      all.vars(stats::formula(fit, fixed.only = TRUE)) -> vars; vars[-1] -> x; vars[1] -> y
-      reformulas::findbars(stats::formula(fit)) %>% as.character() %>% paste0(" + (", .,")") -> random
+  stats::update(stats::formula(fit), stats::as.formula(paste0('. ~ . ', str))) -> new.formula
+  reformulas::nobars(new.formula) -> fixed.formula; stats::terms(fixed.formula) -> fixed.terms
+  attr(fixed.terms, 'term.labels') -> terms.x
+  vapply(terms.x, \(term){min(c(match(all.vars(stats::as.formula(paste0('~', term))), x.order), Inf), na.rm = TRUE)},
+    numeric(1)) -> term.rank
+  order(grepl(':', terms.x, fixed = TRUE), term.rank) -> terms.id
+  terms.x[terms.id] %>% paste0(collapse = ' + ') -> fixed.rhs
+  if(length(terms.x) == 0){'1' -> fixed.rhs}; if(attr(fixed.terms, 'intercept') == 0){paste0('0 + ', fixed.rhs) -> fixed.rhs}
 
-      eval(parse(text =  paste0('stats::update(fit, .~. ', str, ')'))) -> fit.1
-      all.vars(stats::formula(fit.1, fixed.only = TRUE))[-1] -> x.1
-      x.1[order(factor(x.1, levels = x.order))] -> x.1
-
-      paste0(y, ' ~ ', paste0(x.1, collapse = ' + '), random) %>% stats::update(fit, formula = .) %>% return()
-    }
+  reformulas::findbars(new.formula) -> random
+  if(length(random) == 0){'' -> random} else{paste0(' + (', random, ')', collapse = '') -> random}
+  paste0(paste(deparse(fixed.formula[[2]]), collapse = ''), ' ~ ', fixed.rhs, random) %>%
+    stats::as.formula(env = environment(stats::formula(fit))) -> updated.formula
+  getCall(fit) -> fit.call; updated.formula -> fit.call$formula
+  eval(fit.call, environment(stats::formula(fit))) %>% return()
+}
 
 
 
