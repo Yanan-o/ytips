@@ -19,7 +19,7 @@ Generates a color vector from one of three preset palettes.
 }
 \examples{
 color_y(4)
-color_y(4, colbar = 2)
+color_y(4:5, colbar = 2)
 }
 \seealso{
 Other plotting:

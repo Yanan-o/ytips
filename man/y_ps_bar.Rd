@@ -39,7 +39,9 @@ y_ps_bar(
 
 \item{p.adjust}{P-value adjustment method.}
 
-\item{fit.m}{Model expression used to test group differences.}
+\item{fit.m}{Model expression used to test group differences. The default
+uses a random intercept for a column named \code{block}; override it for other
+random-effect or fixed-effect structures.}
 }
 \value{
 A ggplot object.

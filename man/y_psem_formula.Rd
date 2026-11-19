@@ -15,7 +15,8 @@ y_psem_formula(
 )
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted \code{lmer} model, or a list whose first element is a fitted
+\code{lmer} model.}
 
 \item{sem.f}{Formula-building mode, optionally including step or full .}
 

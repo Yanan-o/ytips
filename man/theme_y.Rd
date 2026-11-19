@@ -7,7 +7,7 @@
 theme_y(base.size = 11)
 }
 \arguments{
-\item{base.size}{Base font size.}
+\item{base.size}{Base font size. Defaults to 11.}
 }
 \value{
 A ggplot2 theme object.

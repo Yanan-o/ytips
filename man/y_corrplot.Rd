@@ -14,7 +14,7 @@ y_corrplot(
 )
 }
 \arguments{
-\item{df}{Input data frame.}
+\item{df}{Data frame with label-x, label-y, correlation, and optional p-value columns.}
 
 \item{fill.lim}{Optional correlation color limits.}
 

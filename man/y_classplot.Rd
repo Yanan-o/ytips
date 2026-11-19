@@ -17,14 +17,15 @@ y_classplot(
 )
 }
 \arguments{
-\item{df}{Input data frame.}
+\item{df}{Data frame whose first two columns are the response and grouping
+variable; an optional third column defines colors.}
 
 \item{plot}{Plot type or an existing ggplot object.}
 
 \item{cols}{Optional color values.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 
 \item{error.bar}{Error bars to use: standard deviation or standard error.}
 

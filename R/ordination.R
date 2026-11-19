@@ -75,6 +75,8 @@
 
 y_ps_to_spe <- function(ps, i.trt = 1, i.env = NULL, output = 'spe'){
 
+    yy_check_phyloseq()
+
     ps %>% phyloseq::otu_table() %>% as.data.frame() -> otu.df;
     ps %>% phyloseq::sample_data() %>% as.data.frame() -> sample.df;
     ps %>% phyloseq::tax_table() %>% as.data.frame() -> taxa.df
@@ -258,6 +260,8 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 # subset patterns(nestedness, gradient) & substitution patterns(turnover, balanced)
 # row.names(spe) -> A; paste0(A[grepl('CK', A)], ' vs ', A[!grepl('CK', A)]) -> pairs.ck
 y_beta_part <- function(spe, trt, pairs.id = NULL, output = ''){
+
+  yy_check_pkg("betapart")
 
   if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt}; data.frame(row.names(spe), trt) -> Trt
   if(is.null(pairs.id)){combn(row.names(spe), 2, simplify = FALSE) %>% map(~paste0(.x, collapse = ' vs ')) %>% unlist() -> pairs.id}
@@ -486,6 +490,8 @@ yy_envfit_arrow <- function(model.ord, env){
 y_rdacca_hp <- function(spe, env, env.list = NULL, method =  c('RDA', 'dbRDA', 'CCA'), type = c('R2', 'adjR2'), cols = NULL){
   # env.list = list(A = 1:3, B = 4:7, C = 8:9) group of env metrics
 
+  yy_check_pkg("rdacca.hp")
+
   if(is.null(cols)){RColorBrewer::brewer.pal(9, "Set3") -> cols}; data.frame(names(env), cols) -> e.cols
   if(!is.null(env.list)){cols[1:length(env.list)] %>% rep(times = purrr::map_int(env.list, length)) -> cols.grp; data.frame(names(env), cols.grp) -> e.cols}
 
@@ -512,8 +518,8 @@ y_rdacca_hp <- function(spe, env, env.list = NULL, method =  c('RDA', 'dbRDA', '
 #' @param eig Optional ordination eigenvalues.
 #' @param rr.txt Optional formatted fit text.
 #' @param n.mark Hull or ellipse marker configuration.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @param arrow.length Multiplier for environmental-arrow length.
 #' @param xylim Symmetric ordination-axis limits.
 #' @param show.point Whether to draw sample points instead of group summaries.
@@ -536,6 +542,8 @@ yy_ord_plot <- function(point.df, arrow.df = NULL, eig = NULL, rr.txt = NULL, n.
   # arrow.df should include index, xend, yend, color.
   # eig is the feature root; Dim is the feature value.
   # n.mark = 3 is triangles; The larger the n.mark, the rounder the shadow.
+
+  if(isTRUE(show.density)){yy_check_pkg(c("ggExtra", "ggplotify"),'install.packages(c("ggExtra", "ggplotify"))')}
 
   if(is.null(cols)){RColorBrewer::brewer.pal(8, "Set2") -> cols}; if(is.null(shape)){rep(15, 9) -> shape}
   point.df %>% rename_with(~c("Dim1", "Dim2", "trt")) %>% mutate(trt = factor(trt, levels = unique(trt))) -> point.df

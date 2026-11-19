@@ -49,6 +49,11 @@
 }
 
 
+yy_pkg_available <- function(pkg){
+  requireNamespace(pkg, quietly = TRUE)
+}
+
+
 
 #' @title Check and report missing packages
 #' @description Internal helper that stops with an actionable install command.
@@ -61,7 +66,7 @@
 #'
 
 yy_check_pkg <- function(pkg, install.hint = NULL){
-  missing <- pkg[!vapply(pkg, requireNamespace, logical(1), quietly = TRUE)]
+  missing <- pkg[!vapply(pkg, yy_pkg_available, logical(1))]
   if(length(missing) > 0){
     hint <- if(is.null(install.hint)){
       paste0('install.packages(c(', paste0('"', missing, '"', collapse = ', '), '))')
@@ -74,4 +79,33 @@ yy_check_pkg <- function(pkg, install.hint = NULL){
     ))
   }
   invisible(TRUE)
+}
+
+yy_check_phyloseq <- function(){
+  yy_check_pkg("phyloseq", 'pak::pak("bioc::phyloseq")')
+}
+
+yy_check_network_dependencies <- function(spiec.easi = FALSE, taxa.shuffle = FALSE){
+  yy_check_phyloseq()
+  yy_check_pkg("igraph")
+  if(isTRUE(spiec.easi)){
+    yy_check_pkg("SpiecEasi", 'pak::pak("zdk123/SpiecEasi")')
+  } else if(!isTRUE(taxa.shuffle)){
+    yy_check_pkg("Hmisc")
+  }
+  invisible(TRUE)
+}
+
+yy_check_sem_dependencies <- function(){
+  yy_check_pkg(
+    c("piecewiseSEM", "DiagrammeR"),
+    'pak::pak(c("piecewiseSEM", "DiagrammeR"))'
+  )
+}
+
+yy_check_random_forest_dependencies <- function(){
+  yy_check_pkg(
+    c("rfPermute", "randomForest"),
+    'install.packages(c("rfPermute", "randomForest"))'
+  )
 }

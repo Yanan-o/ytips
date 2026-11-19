@@ -7,9 +7,9 @@
 y_fit_predict(fit, newdata = NULL)
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer} or \code{glmer} model.}
 
-\item{newdata}{Optional data used for prediction.}
+\item{newdata}{Optional data frame with the same predictor names as the model.}
 }
 \value{
 A data frame containing fitted values and intervals.

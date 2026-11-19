@@ -22,7 +22,7 @@ y_fit_addline(
 \arguments{
 \item{plot}{Plot type or an existing ggplot object.}
 
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted model with one numeric predictor.}
 
 \item{cols}{Optional color values.}
 

@@ -35,3 +35,33 @@ test_that("y_fit_classplot accepts a grouping data frame", {
   expect_s3_class(p, "ggplot")
   expect_no_warning(ggplot2::ggplot_build(p))
 })
+
+test_that("random-forest options report missing package installation commands", {
+  random_forest_packages <- c("rfPermute", "randomForest")
+  installed <- vapply(
+    random_forest_packages,
+    requireNamespace,
+    logical(1),
+    quietly = TRUE
+  )
+  skip_if(
+    all(installed),
+    "Random-forest dependencies are installed."
+  )
+
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+
+  expect_error(
+    y_fit_summary(
+      fit,
+      output = "all",
+      diagnostics = TRUE,
+      show.random.forest = TRUE
+    ),
+    "Install with: install.packages"
+  )
+  expect_error(
+    y_random_forest_plot(mtcars, x = c("wt", "hp"), y = "mpg"),
+    "Install with: install.packages"
+  )
+})

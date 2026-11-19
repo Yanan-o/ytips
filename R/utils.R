@@ -22,6 +22,8 @@
 
 onedrive <- function(x, contents = FALSE){
   if(missing(x) || !is.character(x) || length(x) != 1L || !nzchar(x)){stop("x must be one file or folder name")}
+  yy_check_pkg("fs")
+
   roots <- c(Sys.getenv(c("OneDrive", "OneDriveConsumer", "OneDriveCommercial"), unset = ""), Sys.glob(path.expand("~/OneDrive*")),
              Sys.glob(path.expand("~/Library/CloudStorage/OneDrive*")))
   roots <- roots[nzchar(roots) & fs::dir_exists(roots)]

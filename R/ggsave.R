@@ -6,7 +6,7 @@
 #' @return A character vector of colors.
 #' @examples
 #' color_y(4)
-#' color_y(4, colbar = 2)
+#' color_y(4:5, colbar = 2)
 #' @family plotting
 #' @export
 #'
@@ -24,7 +24,7 @@ color_y <- function(n, colbar = 3){
 #' @title Default clean ggplot theme
 #' @description Creates the package's default white-background theme.
 #'
-#' @param base.size Base font size.
+#' @param base.size Base font size. Defaults to 11.
 #' @return A ggplot2 theme object.
 #' @examples
 #' library(ggplot2)
@@ -63,11 +63,11 @@ no_axis_x_title <- ggplot2::theme(axis.title.x = ggplot2::element_blank())
 #' @param x.lab,y.lab Whether to retain x/y axis titles.
 #' @param lab.collect Value passed to `patchwork::wrap_plots(axis_titles = )`.
 #' @param title.p Optional panel titles.
-#' @param save Whether to save the figure; otherwise print it.
-#' @param tag.levels Value passed to `patchwork::plot_annotation()`.
-#' @param dpi Output resolution.
-#' @param show.legend One of `"collect"`, `"last"`, `"no"`, `"all"`, or
-#' `"keep"`.
+#' @param save Logical; save using `file` when `TRUE`, otherwise print the plot.
+#' @param tag.levels Optional label sequence passed to
+#' `patchwork::plot_annotation()`, such as `"a"`.
+#' @param dpi Output resolution in dots per inch. Defaults to 300.
+#' @param show.legend One of `"collect"`, `"last"`, `"no"`, `"all"`, or "keep"`.
 #' @param legend.position Legend position.
 #' @param ... Additional ggplot2 theme elements.
 #' @return The output path invisibly when saving; otherwise the printed plot.

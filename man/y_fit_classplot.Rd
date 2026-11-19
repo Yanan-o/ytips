@@ -17,7 +17,7 @@ y_fit_classplot(
 )
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted model with exactly one categorical predictor.}
 
 \item{plot}{Plot type or an existing ggplot object.}
 

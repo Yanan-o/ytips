@@ -10,8 +10,8 @@ scripts.
 - R 4.3 or newer
 - Core plotting, model and ordination dependencies are installed as package
   `Imports`.
-- Specialist modules use optional dependencies such as `vegan`, `phyloseq`,
-  `igraph`, `SpiecEasi`, `piecewiseSEM` and `DiagrammeR`.
+- Specialist modules use optional dependencies such as `phyloseq`, `igraph`,
+  `SpiecEasi`, `piecewiseSEM` and `DiagrammeR`.
 
 ## Installation
 
@@ -35,10 +35,27 @@ pak::pak("zdk123/SpiecEasi")
 
 # piecewiseSEM
 pak::pak(c("piecewiseSEM", "DiagrammeR"))
+
+# Optional ordination helpers
+pak::pak(c("betapart", "rdacca.hp", "ggExtra", "ggplotify"))
+
+# Residual model diagnostics and OneDrive path helper
+install.packages(c("DHARMa", "fs"))
 ```
 
-Additional model types and model-selection helpers may require packages such as
-`brms`, `glmmTMB` or `MuMIn`.
+Additional model types may require packages such as `brms` or `glmmTMB`.
+
+Pairwise significance labels in `y_ps_bar()` additionally require:
+
+```r
+pak::pak("rcompanion")
+```
+
+Violin and fitted-group plots use optional packages:
+
+```r
+install.packages(c("ggbeeswarm", "ggdist", "car", "ggpubr"))
+```
 
 ## Plotting
 
@@ -73,6 +90,12 @@ result$plot
 residual diagnostics off by default when they call `y_fit_summary()` internally.
 Call `y_fit_summary()` directly with `diagnostics = TRUE` when diagnostics are
 required.
+
+The optional random-forest overlay requires two additional packages:
+
+```r
+install.packages(c("rfPermute", "randomForest"))
+```
 
 ## Ordination
 

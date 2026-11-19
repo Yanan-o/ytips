@@ -7,7 +7,7 @@
 y_fit_update(fit, str = "", x.order = NULL)
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted \code{lmer} model whose random-effect structure is retained.}
 
 \item{str}{Formula update text, such as + x1 - x2 .}
 

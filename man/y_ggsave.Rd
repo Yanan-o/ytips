@@ -50,14 +50,14 @@ y_ggsave(
 
 \item{title.p}{Optional panel titles.}
 
-\item{save}{Whether to save the figure; otherwise print it.}
+\item{save}{Logical; save using \code{file} when \code{TRUE}, otherwise print the plot.}
 
-\item{tag.levels}{Value passed to \code{patchwork::plot_annotation()}.}
+\item{tag.levels}{Optional label sequence passed to
+\code{patchwork::plot_annotation()}, such as \code{"a"}.}
 
-\item{dpi}{Output resolution.}
+\item{dpi}{Output resolution in dots per inch. Defaults to 300.}
 
-\item{show.legend}{One of \code{"collect"}, \code{"last"}, \code{"no"}, \code{"all"}, or
-\code{"keep"}.}
+\item{show.legend}{One of \code{"collect"}, \code{"last"}, \code{"no"}, \code{"all"}, or "keep"`.}
 
 \item{legend.position}{Legend position.}
 

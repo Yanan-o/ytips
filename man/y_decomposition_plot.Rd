@@ -7,9 +7,9 @@
 y_decomposition_plot(df, y1y2.name = c("y1", "y2"), output = "plot")
 }
 \arguments{
-\item{df}{Input data frame.}
+\item{df}{Data frame containing \code{block}, \code{x.fixed}, \code{y}, \code{y1}, and \code{y2}.}
 
-\item{y1y2.name}{Names of the two decomposed response components.}
+\item{y1y2.name}{Character vector of two display labels for \code{y1} and \code{y2}.}
 
 \item{output}{Output mode; see the function description.}
 }
@@ -18,9 +18,7 @@ A ggplot object or a list containing its data.
 }
 \description{
 Partitions explanatory power between two response components.
-The data should contain block, x.fixed, y, and the two components named by
-y1y2.name. The data should contain block, x.fixed, y, and the two
-components named by y1y2.name.
+The data must contain \code{block}, \code{x.fixed}, \code{y}, \code{y1}, and \code{y2}.
 }
 \seealso{
 Other plotting:

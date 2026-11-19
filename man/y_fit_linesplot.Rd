@@ -22,10 +22,11 @@ y_fit_linesplot(
 )
 }
 \arguments{
-\item{fit.list}{A fitted model or a named list of fitted models.}
+\item{fit.list}{A fitted model, or named list of models, each with one
+numeric predictor.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 
 \item{cols}{Optional color values.}
 

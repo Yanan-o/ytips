@@ -18,21 +18,21 @@ y_random_forest_plot(
 )
 }
 \arguments{
-\item{df}{Input data frame.}
+\item{df}{Data frame containing the response and all predictor columns.}
 
-\item{x}{Numeric or character input used by the function.}
+\item{x}{Character vector of predictor column names.}
 
-\item{y}{Response variable name or response values.}
+\item{y}{Name of one response column.}
 
-\item{x.group}{Optional two-column lookup table assigning predictors to
-groups.}
+\item{x.group}{Optional data frame with predictor names in the first column
+and display groups in the second.}
 
 \item{sort}{Whether to sort variables by importance.}
 
 \item{n.top}{Maximum number of variables to display.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 
 \item{cols}{Optional color values.}
 

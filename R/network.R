@@ -46,6 +46,8 @@
 y_ps <- function(otu.df, sample.df, taxa.df = NULL, rarefy = FALSE){
   # first column of sample.df are sample.id; otu.df & FG.df are species; all.df must have no row.names
 
+  yy_check_phyloseq()
+
   if(!is.null(taxa.df)){merge(otu.df, taxa.df, by.x = names(otu.df)[1], by.y = names(taxa.df)[1], all.x = TRUE, sort = FALSE) -> otu.df}
   list(sample.df, otu.df) %>% map(~as_tibble(.x) %>% column_to_rownames(., var = names(.x)[1])) -> df_list
 
@@ -82,6 +84,8 @@ y_ps_filter <- function(ps, filter.n = 0, filter.r.abun = 0, filter.sample = c(0
   # filter.r.abun = 1e-3, 提取所有样本平均后，相对丰度大于千份之一的OTU
   # filter.sample = (0.2, 3), 提取至少20％样本中，出现过3次及以上的OTU
   # prune = TRUE, ps.pruned 删除各样本中丰度均为0或相等的otu(值相等无法计算相关性)
+
+  yy_check_phyloseq()
 
   ps %>% phyloseq::prune_samples(phyloseq::sample_sums(.)> 0, .) -> ps_0_sample
   message("0_0| Samples without any otu:~ ", paste0(setdiff(colnames(phyloseq::otu_table(ps)), colnames(phyloseq::otu_table(ps_0_sample))), collapse = ', '))
@@ -179,7 +183,9 @@ y_ps_group <- function(ps, group = "", method = 'r.abun', max.group = 8, rank = 
 #' @param rank Whether to rank taxa or groups.
 #' @param pairwise Whether to perform all pairwise comparisons.
 #' @param p.adjust P-value adjustment method.
-#' @param fit.m Model expression used to test group differences.
+#' @param fit.m Model expression used to test group differences. The default
+#' uses a random intercept for a column named `block`; override it for other
+#' random-effect or fixed-effect structures.
 #' @return A ggplot object.
 #'
 #' @family network
@@ -191,6 +197,8 @@ y_ps_bar <- function(ps, trt = "", group = "", method = c('abun', 'r.abun', 'ric
 
   # rank.by = 'CK' 按CK排序提取最多8个组
   # fit: **模型检验y ~ x & data = .x 形式不变, 其它可写(变量必须存在于sample_data)
+  if(isTRUE(pairwise)){yy_check_pkg("rcompanion")}
+
   if(is.null(cols)){RColorBrewer::brewer.pal(n = 9, "Set1") %>% scales::alpha(., .8) -> cols}
   if(p.adjust == 'default'){ifelse(pairwise, 'tukey', 'dunnett') -> p.adjust}
 
@@ -282,6 +290,8 @@ y_ps_network <- function(ps, r.threshold = 0.7, p.threshold = 0.05, r.method = "
   # c.group: 控制多级网络布局, 跨界网络分组, e.g., plant, nematode, microbe...
   # v.group: 控制节点分组（与otu匹配的数据框或提供分类名由y_ps_group生成, 同c.group）
 
+  yy_check_network_dependencies(spiec.easi, taxa.shuffle)
+
   if(is.character(c.group)){c.group -> c.gro; y_ps_group(ps, group = c.gro, max.group = 99, rank = FALSE, show.abun = FALSE, output = 'otu') -> c.group}
 
   if(is.character(v.group)){v.group -> v.gro;
@@ -343,6 +353,8 @@ y_ps_igraph <- function(ps, r.threshold = 0.7, p.threshold = 0.05, r.method = 's
   # 基于相关性是转化成r.abun后计算网络是推荐的，但SpiecEasi则必须使用OTU数目
   # p.adjust = "fdr"，能较好地平衡网络稀疏性与假阳性率，被广泛接受（'none'不设置）
   # p & r.threshold，用来过滤边，假阳性已双重控制
+    yy_check_network_dependencies(spiec.easi, taxa.shuffle)
+
     y_ps_filter(ps) -> ps
 
     # 基于SPIEC-EASI (采用稀疏逆协方差估计 + StARS稳定性选择,自动选择稀疏模型，无需控制r或p值)

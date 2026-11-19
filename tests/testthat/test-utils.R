@@ -50,3 +50,109 @@ test_that("onedrive rejects missing names and non-OneDrive roots", {
   expect_error(onedrive(), "x must be one file or folder name")
   expect_false(test_name %in% basename(onedrive(test_name)))
 })
+
+test_that("dependency checks provide actionable installation commands", {
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) FALSE,
+    .package = "ytips"
+  )
+
+  expect_error(ytips:::yy_check_phyloseq(), "bioc::phyloseq")
+  expect_error(
+    ytips:::yy_check_random_forest_dependencies(),
+    "install.packages"
+  )
+  expect_error(ytips:::yy_check_sem_dependencies(), "piecewiseSEM")
+})
+
+test_that("network dependency checks follow the selected method", {
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) pkg %in% c("phyloseq", "igraph"),
+    .package = "ytips"
+  )
+
+  expect_error(
+    ytips:::yy_check_network_dependencies(),
+    "Hmisc"
+  )
+  expect_error(
+    ytips:::yy_check_network_dependencies(spiec.easi = TRUE),
+    "SpiecEasi"
+  )
+  expect_true(
+    ytips:::yy_check_network_dependencies(taxa.shuffle = TRUE)
+  )
+})
+
+test_that("public entry points fail early with installation instructions", {
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) FALSE,
+    .package = "ytips"
+  )
+
+  expect_error(y_ps(NULL, NULL), "bioc::phyloseq")
+  expect_error(y_ps_filter(NULL), "bioc::phyloseq")
+  expect_error(y_ps_bar(NULL, pairwise = TRUE), "rcompanion")
+  expect_error(y_ps_igraph(NULL), "bioc::phyloseq")
+  expect_error(y_ps_network(NULL), "bioc::phyloseq")
+  expect_error(y_psem_boot(NULL, NULL), "piecewiseSEM")
+  expect_error(y_psem_step(NULL), "piecewiseSEM")
+  expect_error(y_ps_to_spe(NULL), "bioc::phyloseq")
+  expect_error(y_beta_part(NULL), "betapart")
+  expect_error(y_rdacca_hp(NULL, NULL), "rdacca.hp")
+  expect_error(
+    yy_ord_plot(
+      data.frame(Dim1 = 1:2, Dim2 = 1:2, trt = c("a", "b")),
+      show.density = TRUE
+    ),
+    "ggExtra"
+  )
+  expect_error(y_descdist(1:10), "fitdistrplus")
+  expect_error(onedrive("example.csv"), "fs")
+  expect_error(
+    y_classplot(mtcars[, c("mpg", "cyl", "am")], plot = "vio"),
+    "ggbeeswarm"
+  )
+  expect_error(
+    y_classplot(mtcars[, c("mpg", "cyl", "am")], plot = "viobox"),
+    "ggdist"
+  )
+  expect_error(
+    y_fit_classplot(stats::lm(mpg ~ factor(cyl), data = mtcars)),
+    "car"
+  )
+  expect_error(
+    y_fit_summary(
+      stats::lm(mpg ~ wt + hp, data = mtcars),
+      output = "all",
+      diagnostics = TRUE
+    ),
+    "DHARMa"
+  )
+})
+
+test_that("fitted-class plots check their conditional dependencies", {
+  fit <- stats::lm(mpg ~ factor(cyl), data = mtcars)
+
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) pkg == "car",
+    .package = "ytips"
+  )
+  expect_error(
+    y_fit_classplot(fit, pairwise = TRUE),
+    "rcompanion"
+  )
+})
+
+test_that("fitted-class brackets require ggpubr", {
+  fit <- stats::lm(count ~ factor(spray), data = InsectSprays)
+
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) pkg != "ggpubr",
+    .package = "ytips"
+  )
+  expect_error(
+    y_fit_classplot(fit, pairwise = FALSE),
+    "ggpubr"
+  )
+})

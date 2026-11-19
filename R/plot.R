@@ -3,11 +3,12 @@
 #' first two data columns are treated as response and grouping variables. If
 #' present, the third column is used for color groups.
 #'
-#' @param df Input data frame.
+#' @param df Data frame whose first two columns are the response and grouping
+#' variable; an optional third column defines colors.
 #' @param plot Plot type or an existing ggplot object.
 #' @param cols Optional color values.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @param error.bar Error bars to use: standard deviation or standard error.
 #' @param hline Optional horizontal reference line or "ck" .
 #' @param vline Optional vertical reference line.
@@ -22,6 +23,8 @@
 y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'linebox'), cols = NULL,
                         fig.name = NULL, error.bar = c('sd', 'se'), hline = FALSE, vline = FALSE, point.size = 1.5, ...){
     # df must be y, x, group
+    if(plot[1] == 'vio'){yy_check_pkg("ggbeeswarm")}; if(plot[1] == 'viobox'){yy_check_pkg("ggdist")}
+
     names(df)[1] -> name_y; if(!is.null(fig.name)){fig.name[match(name_y, fig.name[,1]), 2] -> name_y}
     if(!(c('y') %in% names(df))){rename(df, 'y' = 1) -> df}; if(!(c('x') %in% names(df))){rename(df, 'x' = 2) -> df};
     if(!('group' %in% names(df))){"NA" -> df$group}; df %>% mutate(group = factor(group, levels = unique(group))) -> df;
@@ -63,7 +66,7 @@ y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'lin
 #' or brackets are added according to pairwise. Significance letters or
 #' brackets are added according to pairwise.
 #'
-#' @param fit A fitted model object supported by the function.
+#' @param fit A fitted model with exactly one categorical predictor.
 #' @param plot Plot type or an existing ggplot object.
 #' @param pairwise Whether to perform all pairwise comparisons.
 #' @param p.adjust P-value adjustment method.
@@ -82,6 +85,8 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
 
      # p.adjust = 'none', p-value is equal to y_fit_summary()
      # only one character x permits in fit; group is a df(x, g) or 'name' in fit; using to coloring point
+     yy_check_pkg("car"); if(isTRUE(pairwise)){yy_check_pkg("rcompanion")}
+
      fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res; fit.res$rr.txt -> rr.txt; fit.res$df %>% arrange(across(2)) -> df.0
      if(!is.null(group)){if(is.character(group)){df.0[[group]] -> df.0$'group'} else{group[match(df.0[[2]], group[,1]), 2] -> df.0$'group'}}
      rename(df.0,'y' = 1, 'x' = 2) -> df; group_by(df, x) %>% reframe(max.y = max(y), mean.y = mean(y)) -> df_m
@@ -115,8 +120,8 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
       geom_text(data = rr.txt, aes(x = xposition, y = yposition), label = rr.txt[, "rr.txt"], hjust = "left", parse = TRUE, size = 2.5) -> p
 
     if(pairwise){p + geom_text(data = Est.txt, aes(x = x, y = yposition, label = p.sig), hjust = .5, size = 3) -> p } else {
-      if(nrow(Est.txt) > 0){p + ggpubr::geom_bracket(data = Est.txt, aes(xmin = xstart, xmax = xend, y.position = yposition,
-                                label = p.sig), lty = 1, size = .3, label.size = 3.5, tip.length = .0, vjust = .7) -> p }}
+      if(nrow(Est.txt) > 0){yy_check_pkg("ggpubr"); p + ggpubr::geom_bracket(data = Est.txt, aes(xmin = xstart, xmax = xend, y.position = yposition,
+                            label = p.sig), lty = 1, size = .3, label.size = 3.5, tip.length = .0, vjust = .7) -> p }}
   if(!is.null(hline.value)){p + geom_hline(yintercept = hline.value, lty = 2, linewidth = .3) -> p}
   p + ylim(ymin, ymax) %>% return()
   }
@@ -126,9 +131,10 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
 #' @title Plot fitted lines and confidence bands
 #' @description Plots one or more fitted lines.
 #'
-#' @param fit.list A fitted model or a named list of fitted models.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fit.list A fitted model, or named list of models, each with one
+#' numeric predictor.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @param cols Optional color values.
 #' @param point.size Point size.
 #' @param line.size Line width.
@@ -187,7 +193,7 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
 #' @description Adds a fitted curve to an existing ggplot.
 #'
 #' @param plot Plot type or an existing ggplot object.
-#' @param fit A fitted model object supported by the function.
+#' @param fit A fitted model with one numeric predictor.
 #' @param cols Optional color values.
 #' @param size Line width.
 #' @param alpha Transparency.
@@ -223,9 +229,9 @@ y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show
 #' @title Plot a two-predictor fitted surface
 #' @description Evaluates a fitted model over two numeric predictors.
 #'
-#' @param fit A fitted model object supported by the function.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fit A fitted model with one response and exactly two numeric predictors.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @param fill.lim Optional limits for the fill scale.
 #' @param cols Optional color values.
 #' @param output Output mode; see the function description.
@@ -280,11 +286,12 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 #' variables are residualized against the remaining predictors before their
 #' relationship is plotted.
 #'
-#' @param df Input data frame.
-#' @param y Response variable name or response values.
-#' @param x Numeric or character input used by the function.
-#' @param x.fix Predictor to retain as the focal partial relationship.
-#' @param fit A fitted model object supported by the function.
+#' @param df Data frame; it must also contain `block` when `fit = "lmer"`.
+#' @param y Name of the response column.
+#' @param x Character vector of predictor column names; include `x.fixed`.
+#' @param x.fixed Name of the predictor whose partial relationship is plotted.
+#' @param model Model type. `"lmer"` fits a random intercept for `block`;
+#' any other value fits an ordinary `lm`.
 #' @param show.p Significance threshold used for display.
 #' @return A list containing residual data and a ggplot object.
 #'
@@ -292,10 +299,10 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 #' @export
 #'
 
-y_partial_plot <- function(df, y = "", x = "", x.fix = "", fit = "lmer", show.p = 0.05){
+y_partial_plot <- function(df, y = "", x = "", x.fixed = "", model = "lmer", show.p = 0.05){
 
-  paste0(y, " ~ ", paste0(x[x != x.fix], collapse = " + ")) -> fit_formula1
-  paste0(x.fix, " ~ ", paste0(x[x != x.fix], collapse = " + ")) -> fit_formula2
+  paste0(y, " ~ ", paste0(x[x != x.fixed], collapse = " + ")) -> fit_formula1
+  paste0(x.fix, " ~ ", paste0(x[x != x.fixed], collapse = " + ")) -> fit_formula2
 
   if(fit == "lmer"){paste0(fit_formula1, " + (1|block)") %>% as.formula() %>% lmer(., data = df) -> fit1;
     paste0(fit_formula2, " + (1|block)") %>% as.formula() %>% lmer(., data = df) -> fit2} else{
@@ -324,12 +331,9 @@ y_partial_plot <- function(df, y = "", x = "", x.fix = "", fit = "lmer", show.p 
 
 #' @title Decompose explanatory variation
 #' @description Partitions explanatory power between two response components.
-#' The data should contain block, x.fixed, y, and the two components named by
-#' y1y2.name. The data should contain block, x.fixed, y, and the two
-#' components named by y1y2.name.
 #'
-#' @param df Input data frame.
-#' @param y1y2.name Names of the two decomposed response components.
+#' @param df Data frame containing `block`, `x.fixed`, `y`, `y1`, and `y2`.
+#' @param y1y2.name Character vector of two display labels for `y1` and `y2`.
 #' @param output Output mode; see the function description.
 #' @return A ggplot object or a list containing its data.
 #'
@@ -346,7 +350,7 @@ y_decomposition_plot <- function(df, y1y2.name = c("y1", "y2"), output = "plot")
   fit_pre1 %>% var() -> var_fixef; var_fixef
 
   VarCorr(fit1) %>% as.data.frame() -> var_rb; var_rb
-  var_rb$vcov[1] + var_rb$vcov[2] -> var_Error; var_Error # (fit_pre1 - df_FD_Height$p.FD_Height.norm) %>% var()
+  var_rb$vcov[1] + var_rb$vcov[2] -> var_Error; var_Error
   var_fixef + var_Error -> sum_var_FD; sum_var_FD
 
   lmer(y1 ~ x.fixed + (1|block), data = df) -> fit2
@@ -380,7 +384,7 @@ y_decomposition_plot <- function(df, y1y2.name = c("y1", "y2"), output = "plot")
 #' columns are label-x, label-y, correlation value, and an optional
 #' significance label.
 #'
-#' @param df Input data frame.
+#' @param df Data frame with label-x, label-y, correlation, and optional p-value columns.
 #' @param fill.lim Optional correlation color limits.
 #' @param point.size Point size.
 #' @param legend.title Legend title.

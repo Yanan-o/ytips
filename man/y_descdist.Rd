@@ -7,9 +7,9 @@
 y_descdist(x, discrete = FALSE)
 }
 \arguments{
-\item{x}{Numeric or character input used by the function.}
+\item{x}{Numeric vector of observed values.}
 
-\item{discrete}{Whether values are discrete.}
+\item{discrete}{Logical; whether \code{x} contains discrete counts.}
 }
 \value{
 The distribution-diagnostic result.

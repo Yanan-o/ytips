@@ -9,6 +9,14 @@
 \code{ytips} contains plotting, model-summary, piecewiseSEM, ordination and
 co-occurrence-network helpers migrated from the author's analysis scripts.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/Yanan-o/ytips}
+  \item Report bugs at \url{https://github.com/Yanan-o/ytips/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Yanan Wei \email{weiyanan0912@live.cn}
 

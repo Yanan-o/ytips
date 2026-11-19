@@ -14,12 +14,14 @@ y_fit_summary(
 )
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit}
+model object.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 
-\item{show.random.forest}{Whether to overlay random-forest variable importance.}
+\item{show.random.forest}{Whether to overlay random-forest variable
+importance. Requires \code{rfPermute} and \code{randomForest}.}
 
 \item{rr.inc}{Numeric controls for label spacing.}
 

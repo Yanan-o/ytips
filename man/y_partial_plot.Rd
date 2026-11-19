@@ -7,15 +7,17 @@
 y_partial_plot(df, y = "", x = "", x.fix = "", fit = "lmer", show.p = 0.05)
 }
 \arguments{
-\item{df}{Input data frame.}
+\item{df}{Data frame containing the columns named in \code{y}, \code{x}, and \code{x.fix};
+it must also contain \code{block} when \code{fit = "lmer"}.}
 
-\item{y}{Response variable name or response values.}
+\item{y}{Name of the response column.}
 
-\item{x}{Numeric or character input used by the function.}
+\item{x}{Character vector of predictor column names; include \code{x.fix}.}
 
-\item{x.fix}{Predictor to retain as the focal partial relationship.}
+\item{x.fix}{Name of the predictor whose partial relationship is plotted.}
 
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{Model type. \code{"lmer"} fits a random intercept for \code{block};
+any other value fits an ordinary \code{lm}.}
 
 \item{show.p}{Significance threshold used for display.}
 }

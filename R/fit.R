@@ -3,8 +3,8 @@
 #' Cullen-Frey diagnostic. Combines a Shapiro-Wilk test, boxplot, histogram,
 #' density and QQ plot with the Cullen-Frey distribution diagnostic.
 #'
-#' @param x Numeric or character input used by the function.
-#' @param discrete Whether values are discrete.
+#' @param x Numeric vector of observed values.
+#' @param discrete Logical; whether `x` contains discrete counts.
 #' @return The distribution-diagnostic result.
 #'
 #' @family fitting
@@ -12,6 +12,8 @@
 #'
 
 y_descdist <- function(x, discrete = FALSE){
+  yy_check_pkg("fitdistrplus")
+
   shapiro.test(x) -> A ; par(mfrow = c(2, 2)) # if p > 0.1, normality, p > .05 is ok
   paste0(A$method, ":\nw = ", round(A$statistic, 2), ' p = ', round(A$p.value, 2)) -> norm.txt
   boxplot(x, horizontal = TRUE); abline(v = mean(x), col = "red"); title(norm.txt); hist(x);
@@ -27,10 +29,12 @@ y_descdist <- function(x, discrete = FALSE){
 #' glmer, glmmTMB and brmsfit models. Use models fitted with lmerTest::lmer()
 #' to retain mixed-model p-values.
 #'
-#' @param fit A fitted model object supported by the function.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
-#' @param show.random.forest Whether to overlay random-forest variable importance.
+#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
+#' model object.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
+#' @param show.random.forest Whether to overlay random-forest variable
+#' importance. Requires `rfPermute` and `randomForest`.
 #' @param rr.inc Numeric controls for label spacing.
 #' @param output Output mode; see the function description.
 #' @param diagnostics Whether to draw model residual diagnostics.
@@ -46,6 +50,9 @@ y_descdist <- function(x, discrete = FALSE){
 
 y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.inc = c(.08, 0), output = 'p', diagnostics = TRUE){
     # input should be fit, lm, glm, lmer, glmer, glmmTMB or brm [s(x, k = 3) is ok]
+
+    if(isTRUE(diagnostics)){yy_check_pkg("DHARMa")}
+    if(show.random.forest){yy_check_random_forest_dependencies()}
 
     if(inherits(fit, 'brmsfit')){
 
@@ -95,12 +102,13 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
         scale_y_discrete(expand = expansion(mult = c(.2, .2))) -> fit.plot
 
    # show RF in plot
-   if(show.random.forest){ y_random_forest_plot(y = names(df)[[1]], x = Est.txt$x, df = df, sort = FALSE, output = 'all') -> RF.res
+   if(show.random.forest){
+    y_random_forest_plot(y = names(df)[[1]], x = Est.txt$x, df = df, sort = FALSE, output = 'all') -> RF.res
     RF.res$RF.result %>% select(x = name_x, X.IncMSE) %>% merge(df.p, ., by = "x", sort = F, all.x = T) %>%
     mutate(X.IncMSE2 = X.IncMSE/max(X.IncMSE)*max.x) -> df.p.RF
-
     fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(fig_x) -.4, ymax = as.numeric(fig_x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
-    annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F,  size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot }
+    annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F,  size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
+    }
 
  if(grepl('p', output)){fit.plot %>% return()} else{list('df' = df, "Est.txt" = Est.txt, "rr.txt" = rr.txt, "plot" = fit.plot) %>% return()}
  }
@@ -112,8 +120,8 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 #' bootstrap intervals. Linear and generalized linear models use confidence
 #' intervals. Mixed models use 200 parametric bootstraps.
 #'
-#' @param fit A fitted model object supported by the function.
-#' @param newdata Optional data used for prediction.
+#' @param fit A fitted `lm`, `glm`, `lmer` or `glmer` model.
+#' @param newdata Optional data frame with the same predictor names as the model.
 #' @return A data frame containing fitted values and intervals.
 #'
 #' @family fitting
@@ -149,7 +157,7 @@ y_fit_predict <- function(fit, newdata = NULL){
 #' p-values. A warning is issued when more than 255 candidate models are
 #' requested. output = "best_fit" returns only the selected model.
 #'
-#' @param fit A fitted model object supported by the function.
+#' @param fit A fitted `lm` or `lmer` model object.
 #' @param step Model-selection rule: AICc, p < 0.1, or p < 0.05.
 #' @param output Output mode; see the function description.
 #' @return The best model or a list of candidate-model results.
@@ -200,7 +208,7 @@ y_fit_step <- function(fit, step = "aicc", output = "all"){
 #' retaining random effects. str accepts compact formula updates such as "+ x1
 #' - x2".
 #'
-#' @param fit A fitted model object supported by the function.
+#' @param fit A fitted `lmer` model whose random-effect structure is retained.
 #' @param str Formula update text, such as + x1 - x2 .
 #' @param x.order Optional predictor display order.
 #' @return An updated fitted model.
@@ -213,7 +221,7 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
 
       getData(fit) %>% as_tibble() -> df; if(is.null(x.order)){names(df) -> x.order}
       all.vars(stats::formula(fit, fixed.only = TRUE)) -> vars; vars[-1] -> x; vars[1] -> y
-      lme4::findbars(stats::formula(fit)) %>% as.character() %>% paste0(" + (", .,")") -> random
+      reformulas::findbars(stats::formula(fit)) %>% as.character() %>% paste0(" + (", .,")") -> random
 
       eval(parse(text =  paste0('stats::update(fit, .~. ', str, ')'))) -> fit.1
       all.vars(stats::formula(fit.1, fixed.only = TRUE))[-1] -> x.1
@@ -230,9 +238,9 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
 #' model are averaged. The first plot shows relative importance; the second
 #' shows coefficients.
 #'
-#' @param fit A fitted model object supported by the function.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fit A fitted model accepted by `MuMIn::dredge()`.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @return A named list containing two ggplot objects.
 #'
 #' @family fitting
@@ -267,15 +275,15 @@ y_fit_model_avg <- function(fit, fig.name = NULL){
 #' @description Runs a permuted random forest and plots variable importance.
 #' Permutation importance controls the displayed significance marks.
 #'
-#' @param df Input data frame.
-#' @param x Numeric or character input used by the function.
-#' @param y Response variable name or response values.
-#' @param x.group Optional two-column lookup table assigning predictors to
-#' groups.
+#' @param df Data frame containing the response and all predictor columns.
+#' @param x Character vector of predictor column names.
+#' @param y Name of one response column.
+#' @param x.group Optional data frame with predictor names in the first column
+#' and display groups in the second.
 #' @param sort Whether to sort variables by importance.
 #' @param n.top Maximum number of variables to display.
-#' @param fig.name Optional two-column lookup table mapping input labels to
-#' display labels.
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
 #' @param cols Optional color values.
 #' @param coord.flip Whether to flip plot coordinates.
 #' @param output Output mode; see the function description.
@@ -287,6 +295,8 @@ y_fit_model_avg <- function(fit, fig.name = NULL){
 
 y_random_forest_plot <- function(df, x = "", y = "", x.group = NULL, sort = FALSE, n.top = 9,
                       fig.name = NULL, cols = NULL, coord.flip = TRUE, output = "p"){
+
+    yy_check_random_forest_dependencies()
 
     # x = c('x1', 'x2', ...); x.group is a df same to fig.name
     if(is.null(cols)){color_y(n = 7, colbar = 1) -> cols}

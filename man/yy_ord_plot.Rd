@@ -35,8 +35,8 @@ treatment.}
 
 \item{n.mark}{Hull or ellipse marker configuration.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 
 \item{arrow.length}{Multiplier for environmental-arrow length.}
 

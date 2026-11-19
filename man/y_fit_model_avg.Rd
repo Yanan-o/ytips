@@ -7,10 +7,10 @@
 y_fit_model_avg(fit, fig.name = NULL)
 }
 \arguments{
-\item{fit}{A fitted model object supported by the function.}
+\item{fit}{A fitted model accepted by \code{MuMIn::dredge()}.}
 
-\item{fig.name}{Optional two-column lookup table mapping input labels to
-display labels.}
+\item{fig.name}{Optional data frame: input labels in column 1 and display
+labels in column 2.}
 }
 \value{
 A named list containing two ggplot objects.
