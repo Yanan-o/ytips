@@ -8,20 +8,37 @@ scripts.
 ## Requirements
 
 - R 4.3 or newer
-- Core plotting/model dependencies are installed automatically.
+- Core plotting, model and ordination dependencies are installed as package
+  `Imports`.
 - Specialist modules use optional dependencies such as `vegan`, `phyloseq`,
   `igraph`, `SpiecEasi`, `piecewiseSEM` and `DiagrammeR`.
 
 ## Installation
 
 ```r
-pak::pak('local::~/path/ytips')
+install.packages("pak")
+pak::pak("Yanan-o/ytips")
 library(ytips)
 ```
 
-Specialist dependencies are intentionally listed in `Suggests` to keep the
-initial installation small. Missing packages produce an error with the relevant
-CRAN, Bioconductor or GitHub installation command.
+`pak::pak()` installs required dependencies but does not install optional
+dependencies listed in `Suggests`. Install the packages for each module you
+plan to use:
+
+```r
+# Co-occurrence networks
+pak::pak(c("igraph", "Hmisc"))
+pak::pak("bioc::phyloseq")
+
+# Additional network method, only when spiec.easi = TRUE
+pak::pak("zdk123/SpiecEasi")
+
+# piecewiseSEM
+pak::pak(c("piecewiseSEM", "DiagrammeR"))
+```
+
+Additional model types and model-selection helpers may require packages such as
+`brms`, `glmmTMB` or `MuMIn`.
 
 ## Plotting
 
@@ -35,8 +52,8 @@ p <- ggplot(mtcars, aes(wt, mpg)) +
 y_ggsave(p, file = tempfile("ytips-plot"), save = FALSE)
 ```
 
-`color_y()`, while internal `no_legend`, `no_axis_x` and `no_axis_y` themes provide the same
-plotting defaults used by the other helpers.
+`color_y()` and the internal `no_legend`, `no_axis_x` and `no_axis_y` themes
+provide the same plotting defaults used by the other helpers.
 
 ## Model summaries
 
@@ -80,18 +97,45 @@ The network helpers require `phyloseq`, `igraph` and, for the normal-approximati
 p-value path, `Hmisc`. `SpiecEasi` is only required when `spiec.easi = TRUE`.
 
 ```r
+# otu.df: first column is the taxon/OTU ID; remaining columns are sample IDs.
+# sample.df: first column is the sample ID; remaining columns are sample data.
+# taxa.df: optional; its first column must use the same taxon/OTU IDs.
 ps <- y_ps(otu.df, sample.df, taxa.df)
+
+# Build only the igraph object.
 graph <- y_ps_igraph(ps)
-properties <- y_ps_network(ps)
+
+# Run the complete workflow. This builds its own graph, calculates network
+# properties and Zi-Pi roles, draws the network, and returns the results.
+network <- y_ps_network(ps)
+
+network$igraph
+network$V.df
+network$E.df
+network$property
+network$zipi.res
 ```
+
+The default correlation workflow retains edges with an absolute Spearman
+correlation of at least 0.7 and an adjusted p-value of at most 0.05. It requires
+more than four samples. `y_ps_network()` returns a list, not a single properties
+table; use `network$property` for the global network properties.
 
 ## piecewiseSEM
 
+`y_psem_formula()` currently expects a mixed-model workflow based on `lmer`.
+
 ```r
+data(sleepstudy, package = "lme4")
+
+fit_sem <- lmerTest::lmer(
+  Reaction ~ Days + (1 | Subject),
+  data = sleepstudy
+)
+
 sem.formula <- y_psem_formula(
-  fit,
-  x.level1 = "treatment1", "treatment2",
-  x.level2 = "environment1", "environment2",
+  fit_sem,
+  x.level1 = "Days"
 )
 
 sem.fit <- y_psem_boot(sem.formula, nrep = 0, output = "sem.fit")
