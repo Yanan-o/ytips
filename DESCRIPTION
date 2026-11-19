@@ -1,0 +1,69 @@
+Package: ytips
+Title: Plotting, Model, SEM, Ordination and Network Helpers
+Version: 0.0.0.9000
+Authors@R:
+    person("Yanan", "Wei", email = "weiyanan0912@live.cn",
+           role = c("aut", "cre"))
+Description: A personal ecology toolbox containing plotting and model-summary
+    helpers, piecewiseSEM workflows, community-ordination analyses and
+    co-occurrence-network utilities.
+License: MIT + file LICENSE
+Depends:
+    R (>= 4.3)
+Imports:
+    stats,
+    graphics,
+    utils,
+    grDevices,
+    grid,
+    fs,
+    ggplot2 (>= 3.5.0),
+    dplyr (>= 1.1.0),
+    purrr (>= 1.0.0),
+    tibble,
+    tidyr,
+    stringr,
+    patchwork (>= 1.2.0),
+    magrittr,
+    rlang,
+    scales,
+    lme4,
+    lmerTest
+Suggests:
+    brms,
+    glmmTMB,
+    mgcv,
+    performance,
+    MuMIn,
+    DHARMa,
+    emmeans,
+    rcompanion,
+    car,
+    ggbeeswarm,
+    ggdist,
+    ggpubr,
+    rfPermute,
+    randomForest,
+    piecewiseSEM,
+    DiagrammeR,
+    fitdistrplus,
+    phyloseq,
+    SpiecEasi,
+    igraph,
+    Hmisc,
+    vegan,
+    WGCNA,
+    pairwiseAdonis,
+    betapart,
+    indicspecies,
+    rdacca.hp,
+    ggforce,
+    ggExtra,
+    ggplotify,
+    permute,
+    testthat (>= 3.0.0),
+    withr
+Config/testthat/edition: 3
+Config/roxygen2/version: 8.1.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
