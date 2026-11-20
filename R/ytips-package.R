@@ -91,8 +91,7 @@ yy_check_pkg <- function(pkg, install.hint = NULL, ask = interactive()){
               "Package installation failed.",
               x = conditionMessage(e),
               i = paste0("Install manually with: ", hint)
-            ))
-          }
+            ))}
         )
         missing <- pkg[!vapply(pkg, yy_pkg_available, logical(1))]
         if(length(missing) == 0){return(invisible(TRUE))}
