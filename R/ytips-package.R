@@ -63,13 +63,14 @@ yy_pkg_available <- function(pkg){
 #'
 #' @param pkg Package name or character vector of package names.
 #' @param install.hint Optional installation command.
-#' @param ask Whether to ask before installing. Defaults to `interactive()`.
+#' @param ask Whether to ask before installing. If `NULL`, asks in RStudio or
+#' an interactive R session, but not during automated tests.
 #' @return Invisibly returns `TRUE` when all packages are available.
 #' @family utilities
 #' @keywords internal
 #'
 
-yy_check_pkg <- function(pkg, install.hint = NULL, ask = interactive()){
+yy_check_pkg <- function(pkg, install.hint = NULL, ask = NULL){
   missing <- pkg[!vapply(pkg, yy_pkg_available, logical(1))]
   if(length(missing) > 0){
     hint <- if(is.null(install.hint)){
@@ -77,11 +78,27 @@ yy_check_pkg <- function(pkg, install.hint = NULL, ask = interactive()){
     } else{
       install.hint
     }
+    in.rstudio <- requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()
+    if(is.null(ask)){
+      ask <- !identical(Sys.getenv("TESTTHAT"), "true") && (in.rstudio || interactive())
+    }
     if(isTRUE(ask)){
-      choice <- utils::menu(
-        c("Install now", "Do not install"),
-        title = paste0("Package(s) not installed: ", paste0(missing, collapse = ", "))
-      )
+      if(in.rstudio){
+        choice <- if(rstudioapi::showQuestion(
+          title = "Missing R packages",
+          message = paste0(
+            "Package(s) not installed: ", paste0(missing, collapse = ", "),
+            "\n\nInstall them now?"
+          ),
+          ok = "Install",
+          cancel = "Do not install"
+        )){1L} else{2L}
+      } else{
+        choice <- utils::menu(
+          c("Install now", "Do not install"),
+          title = paste0("Package(s) not installed: ", paste0(missing, collapse = ", "))
+        )
+      }
       if(choice == 1L){
         message("Installing package dependencies with:\n", hint)
         tryCatch(

@@ -4,14 +4,15 @@
 \alias{yy_check_pkg}
 \title{Check and report missing packages}
 \usage{
-yy_check_pkg(pkg, install.hint = NULL, ask = interactive())
+yy_check_pkg(pkg, install.hint = NULL, ask = NULL)
 }
 \arguments{
 \item{pkg}{Package name or character vector of package names.}
 
 \item{install.hint}{Optional installation command.}
 
-\item{ask}{Whether to ask before installing. Defaults to \code{interactive()}.}
+\item{ask}{Whether to ask before installing. If \code{NULL}, asks in RStudio or
+an interactive R session, but not during automated tests.}
 }
 \value{
 Invisibly returns \code{TRUE} when all packages are available.

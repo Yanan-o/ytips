@@ -98,6 +98,26 @@ test_that("dependency checks offer an interactive installation choice", {
   )
 })
 
+test_that("dependency checks use an RStudio dialog when available", {
+  marker <- tempfile()
+  local_mocked_bindings(
+    yy_pkg_available = function(pkg) file.exists(marker),
+    .package = "ytips"
+  )
+
+  with_mocked_bindings(
+    isAvailable = function(...) TRUE,
+    showQuestion = function(...) TRUE,
+    .package = "rstudioapi",
+    expect_true(ytips:::yy_check_pkg(
+      "example.package",
+      install.hint = paste0("file.create(", shQuote(marker), ")"),
+      ask = TRUE
+    ))
+  )
+  expect_true(file.exists(marker))
+})
+
 test_that("network dependency checks follow the selected method", {
   local_mocked_bindings(
     yy_pkg_available = function(pkg) pkg %in% c("phyloseq", "igraph"),
