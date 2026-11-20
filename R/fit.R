@@ -105,7 +105,7 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
     y_random_forest_plot(y = names(df)[[1]], x = Est.txt$x, df = df, sort = FALSE, output = 'all') -> RF.res
     RF.res$RF.result %>% select(x = name_x, X.IncMSE) %>% merge(df.p, ., by = "x", sort = F, all.x = T) %>%
     mutate(X.IncMSE2 = X.IncMSE/max(X.IncMSE)*max.x) -> df.p.RF
-    fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(fig_x) -.4, ymax = as.numeric(fig_x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
+    fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(x) -.4, ymax = as.numeric(x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
     annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F,  size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
     }
 

@@ -89,6 +89,30 @@ test_that("y_fit_summary supports plain lme4 models", {
   expect_type(result, "list")
 })
 
+test_that("y_fit_summary draws the random-forest overlay", {
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  local_mocked_bindings(
+    yy_check_random_forest_dependencies = function() TRUE,
+    y_random_forest_plot = function(...){
+      list(RF.result = data.frame(
+        name_x = c("wt", "hp"),
+        X.IncMSE = c(20, 10)
+      ))
+    },
+    .package = "ytips"
+  )
+
+  result <- y_fit_summary(
+    fit,
+    output = "all",
+    diagnostics = FALSE,
+    show.random.forest = TRUE
+  )
+
+  expect_s3_class(result$plot, "ggplot")
+  expect_silent(ggplot2::ggplot_build(result$plot))
+})
+
 test_that("y_fit_classplot accepts a grouping data frame", {
   fit <- stats::lm(mpg ~ factor(cyl), data = mtcars)
   group_map <- data.frame(
