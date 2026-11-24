@@ -23,9 +23,9 @@ intervals for supported models. Random effects are excluded from prediction.
 \details{
 Automatic grids include all fixed-effect predictors. Numeric
 variables use evenly spaced values across their observed range, while
-categorical variables retain their observed levels. Up to two numeric
-predictors use 100 values each; with more predictors, the number of values
-per predictor is reduced to keep the grid near 10,000 combinations.
+categorical variables retain their observed levels. Up to two fixed-effect
+predictors use 100 numeric values each; with more predictors, the number of
+values per predictor is reduced to keep the grid near 10,000 combinations.
 }
 \seealso{
 Other fitting:

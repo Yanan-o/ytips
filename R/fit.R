@@ -50,7 +50,8 @@ y_descdist <- function(x, discrete = FALSE){
 #' @export
 #'
 
-y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.inc = c(.08, 0), output = 'p', diagnostics = TRUE){
+y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE,
+                          rr.inc = c(.08, 0), output = 'p', diagnostics = TRUE){
 
     if(isTRUE(diagnostics)){yy_check_pkg("DHARMa")}
     if(show.random.forest){yy_check_random_forest_dependencies()}
@@ -109,7 +110,8 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
     annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F,  size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
     }
 
- if(grepl('p', output)){fit.plot %>% return()} else{list('df' = df, "Est.txt" = Est.txt, "rr.txt" = rr.txt, "plot" = fit.plot) %>% return()}
+ if(grepl('p', output)){fit.plot %>% return()} else{
+   list('df' = df, "Est.txt" = Est.txt, "rr.txt" = rr.txt, "plot" = fit.plot) %>% return()}
  }
 
 
@@ -125,25 +127,23 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 #' @return A data frame containing fitted values and intervals.
 #' @details Automatic grids include all fixed-effect predictors. Numeric
 #' variables use evenly spaced values across their observed range, while
-#' categorical variables retain their observed levels. Up to two numeric
-#' predictors use 100 values each; with more predictors, the number of values
-#' per predictor is reduced to keep the grid near 10,000 combinations.
+#' categorical variables retain their observed levels. Up to two fixed-effect
+#' predictors use 100 numeric values each; with more predictors, the number of
+#' values per predictor is reduced to keep the grid near 10,000 combinations.
 #'
 #' @family fitting
 #' @export
 #'
 
-y_fit_predict <- function(fit, newdata = NULL){
+y_fit_predict <- function(fit, newdata = NULL, re_formula = NA){
     if(is.null(newdata)){insight::get_data(fit) -> df
     } else if(is.character(newdata)){
-      insight::get_data(fit) -> data
-      insight::find_predictors(fit, effects = 'fixed', flatten = TRUE) -> predictors
-      sum(vapply(data[predictors], is.numeric, logical(1))) -> n.numeric
-      if(n.numeric <= 2){100 -> grid.length} else{max(2, floor(10000^(1/n.numeric))) -> grid.length}
+      insight::find_predictors(fit, effects = 'fixed', flatten = TRUE) -> vars.x; length(vars.x) -> n.x
+      if(n.x <= 2){100 -> grid.length} else{max(5, floor(10000^(1/n.x))) -> grid.length}
       insight::get_datagrid(fit, length = grid.length, range = 'range', protect_integers = FALSE,
-        include_response = FALSE, include_random = FALSE) -> df
-    } else {newdata -> df}
-    insight::get_predicted(fit, data = df, predict = 'response', ci = .95, re_formula = NA) %>%
+                            include_response = FALSE, include_random = FALSE) -> df} else {newdata -> df}
+
+    insight::get_predicted(fit, data = df, predict = 'response', ci = .95, re_formula = re_formula) %>%
       as.data.frame() %>% select(1:4) %>% rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>%
       select(!ypre.se) -> ypre
     df %>% cbind(ypre) %>% as_tibble() %>% return()

@@ -160,19 +160,19 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
 
     if(class(fit.list)[1] == 'list'){
       fit.list %>% map(~{y_fit_summary(.x, output = 'all', diagnostics = FALSE)}) -> fit.res;
-      fit.res %>% map('df') %>% bind_rows(.id = 'line') -> df_fit; df_fit %>% names() -> name_vars;
+      fit.res %>% map('df') %>% bind_rows(.id = 'line') -> df_fit; names(df_fit)[-1] -> name_vars;
       fit.list %>% map(~{.x %>% y_fit_predict(newdata = 'grid')}) %>% bind_rows(.id = 'line') -> df_pre
         map(fit.res, "Est.txt") %>% map(~data.frame(P = .x$p, P.txt = .x$p.txt)) %>% bind_rows(.id = 'line') -> P
         map(fit.res, "rr.txt") %>% map(~data.frame(txt = paste0(.x[,1], collapse = '~~') )) %>% bind_rows() %>%
         cbind(., P) %>% mutate(txt = paste0(txt, '~~', P.txt)) -> df_txt0
       } else{
       fit.list %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res;
-      fit.res$df %>% mutate(line = 'line') -> df_fit; names(df_fit) -> name_vars;
+      fit.res$df %>% mutate(line = 'line') -> df_fit; names(fit.res$df) -> name_vars;
       fit.list %>% y_fit_predict(newdata = 'grid') %>% mutate(line = 'line') -> df_pre
       data.frame(txt = rbind(paste0(fit.res$rr.txt[,1], collapse = '~~'), fit.res$Est.txt$p.txt), P = fit.res$Est.txt$p) %>% mutate(line = "line") -> df_txt0 }
 
     # plot
-    df_fit %>% rename('y' = 1, 'x' = 2) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
+    df_fit %>% rename('y' = name_vars[1], 'x' = name_vars[2]) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
     df_pre %>% rename('x' = 1) %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
     if(is.null(fig.name)){name_vars -> fig_name} else{fig.name[match(name_vars, fig.name[,1]), 2] -> fig_name}
     if(is.null(ylim)){.9*min(df_fit$y, df_pre$ypre.Q2.5) -> ymin; 1.1*max(df_fit$y, df_pre$ypre.Q97.5) -> ymax} else{ylim[1] -> ymin; ylim[2] -> ymax}

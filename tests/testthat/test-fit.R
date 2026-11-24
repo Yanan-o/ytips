@@ -14,6 +14,9 @@ test_that("y_fit_predict returns fitted values", {
 
   expect_true(all(c("ypre", "ypre.Q2.5", "ypre.Q97.5") %in% names(result)))
   expect_equal(nrow(result), nrow(mtcars))
+
+  supplied <- y_fit_predict(fit, newdata = mtcars[1:5, ])
+  expect_equal(nrow(supplied), 5)
 })
 
 test_that("y_fit_predict generates a prediction grid from the model", {
@@ -25,6 +28,16 @@ test_that("y_fit_predict generates a prediction grid from the model", {
   expect_equal(range(result$hp), range(mtcars$hp))
   expect_true(all(c("wt", "hp", "ypre", "ypre.Q2.5", "ypre.Q97.5") %in%
     names(result)))
+})
+
+test_that("prediction grids reduce resolution for three predictors", {
+  fit <- stats::lm(mpg ~ wt + hp + drat, data = mtcars)
+  result <- y_fit_predict(fit, newdata = "grid")
+
+  expect_equal(nrow(result), 21^3)
+  expect_equal(length(unique(result$wt)), 21)
+  expect_equal(length(unique(result$hp)), 21)
+  expect_equal(length(unique(result$drat)), 21)
 })
 
 test_that("automatic prediction grids preserve categorical levels", {
