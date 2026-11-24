@@ -7,10 +7,11 @@
 y_fit_predict(fit, newdata = NULL)
 }
 \arguments{
-\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit}
-model.}
+\item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} model.}
 
-\item{newdata}{Optional data frame with the same predictor names as the model.}
+\item{newdata}{\code{NULL} uses the model data; a data frame supplies predictor
+values directly; a character value such as \code{"new"} generates a balanced grid
+across the observed predictor ranges.}
 }
 \value{
 A data frame containing fitted values and intervals.
@@ -18,6 +19,12 @@ A data frame containing fitted values and intervals.
 \description{
 Returns observed data with fitted values and 95\% confidence
 intervals for supported models. Random effects are excluded from prediction.
+}
+\details{
+Automatic grids include all fixed-effect predictors. Numeric
+variables use evenly spaced values across their observed range, while
+categorical variables retain their observed levels. The grid is capped near
+10,000 combinations by reducing the number of numeric values per predictor.
 }
 \seealso{
 Other fitting:

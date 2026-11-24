@@ -12,6 +12,7 @@ y_beta_simper(
   ylim = 1,
   show.contri = 0.7,
   show.adonis = TRUE,
+  show.p.pairs = "",
   ...
 )
 }
@@ -31,8 +32,10 @@ remainder as Others .}
 
 \item{show.adonis}{Whether to add PERMANOVA results to the plot.}
 
+\item{show.p.pairs}{Text filter for displayed pairwise PERMANOVA results.}
+
 \item{...}{Additional arguments passed to \code{\link[=yy_adonis_summary]{yy_adonis_summary()}} when
-\code{show.adonis = TRUE}, including \code{show.p}, \code{show.p.pairs}, or \code{rr.inc}.}
+\code{show.adonis = TRUE}, including \code{show.p} or \code{rr.inc}.}
 }
 \value{
 A named list with \code{simper.res}, \code{simper.res.mean}, and \code{plot}.

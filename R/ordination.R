@@ -304,8 +304,9 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 #' @param show.contri Cumulative contribution retained before grouping the
 #' remainder as Others .
 #' @param show.adonis Whether to add PERMANOVA results to the plot.
+#' @param show.p.pairs Text filter for displayed pairwise PERMANOVA results.
 #' @param ... Additional arguments passed to [yy_adonis_summary()] when
-#' `show.adonis = TRUE`, including `show.p`, `show.p.pairs`, or `rr.inc`.
+#' `show.adonis = TRUE`, including `show.p` or `rr.inc`.
 #' @return A named list with `simper.res`, `simper.res.mean`, and `plot`.
 #'
 #' @family ordination

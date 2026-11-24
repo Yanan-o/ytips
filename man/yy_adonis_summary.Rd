@@ -8,7 +8,7 @@ yy_adonis_summary(
   spe,
   trt,
   show.p = 0.05,
-  show.p.pairs = c("CK", ""),
+  show.p.pairs = c("", "CK"),
   xylim = 1,
   rr.inc = 0.05
 )

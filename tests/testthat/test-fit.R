@@ -16,6 +16,30 @@ test_that("y_fit_predict returns fitted values", {
   expect_equal(nrow(result), nrow(mtcars))
 })
 
+test_that("y_fit_predict generates a prediction grid from the model", {
+  fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
+  result <- y_fit_predict(fit, newdata = "new")
+
+  expect_equal(nrow(result), 10000)
+  expect_equal(range(result$wt), range(mtcars$wt))
+  expect_equal(range(result$hp), range(mtcars$hp))
+  expect_true(all(c("wt", "hp", "ypre", "ypre.Q2.5", "ypre.Q97.5") %in%
+    names(result)))
+})
+
+test_that("automatic prediction grids preserve categorical levels", {
+  fit <- stats::glm(
+    am ~ wt + factor(cyl),
+    data = mtcars,
+    family = stats::binomial
+  )
+  result <- y_fit_predict(fit, newdata = "grid")
+
+  expect_equal(sort(unique(result$cyl)), c(4, 6, 8))
+  expect_true(all(result$ypre >= 0 & result$ypre <= 1))
+  expect_false(anyNA(result$ypre))
+})
+
 test_that("fit helpers support generalized and mixed models", {
   glm_fit <- stats::glm(am ~ wt + hp, data = mtcars, family = stats::binomial)
   glm_result <- y_fit_summary(glm_fit, output = "all", diagnostics = FALSE)

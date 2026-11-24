@@ -118,17 +118,30 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 #' @description Returns observed data with fitted values and 95% confidence
 #' intervals for supported models. Random effects are excluded from prediction.
 #'
-#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
-#' model.
-#' @param newdata Optional data frame with the same predictor names as the model.
+#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit` model.
+#' @param newdata `NULL` uses the model data; a data frame supplies predictor
+#' values directly; a character value such as `"new"` generates a balanced grid
+#' across the observed predictor ranges.
 #' @return A data frame containing fitted values and intervals.
+#' @details Automatic grids include all fixed-effect predictors. Numeric
+#' variables use evenly spaced values across their observed range, while
+#' categorical variables retain their observed levels. The grid is capped near
+#' 10,000 combinations by reducing the number of numeric values per predictor.
 #'
 #' @family fitting
 #' @export
 #'
 
 y_fit_predict <- function(fit, newdata = NULL){
-    if(is.null(newdata)){insight::get_data(fit) -> df} else{newdata -> df}
+    if(is.null(newdata)){insight::get_data(fit) -> df
+    } else if(is.character(newdata)){
+      insight::get_data(fit) -> data
+      insight::find_predictors(fit, effects = 'fixed', flatten = TRUE) -> predictors
+      sum(vapply(data[predictors], is.numeric, logical(1))) -> n.numeric
+      max(2, min(100, floor(10000^(1/max(1, n.numeric))))) -> grid.length
+      insight::get_datagrid(fit, length = grid.length, range = 'range', protect_integers = FALSE,
+        include_response = FALSE, include_random = FALSE) -> df
+    } else {newdata -> df}
     insight::get_predicted(fit, data = df, predict = 'response', ci = .95, re_formula = NA) %>%
       as.data.frame() %>% select(1:4) %>% rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>%
       select(!ypre.se) -> ypre

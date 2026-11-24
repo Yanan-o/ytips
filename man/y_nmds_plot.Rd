@@ -9,7 +9,7 @@ y_nmds_plot(
   trt,
   env = NULL,
   show.p = 0.05,
-  show.p.pairs = c("CK", ""),
+  show.p.pairs = "",
   xylim = 1,
   rr.inc = 0.05,
   ...
