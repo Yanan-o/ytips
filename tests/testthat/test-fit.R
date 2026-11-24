@@ -69,6 +69,23 @@ test_that("fit helpers support generalized and mixed models", {
   expect_true(all(c("ypre", "ypre.Q2.5", "ypre.Q97.5") %in% names(lmer_pred)))
 })
 
+test_that("y_fit_predict can retain random effects", {
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
+  newdata <- lme4::sleepstudy[c(1, 10, 20), ]
+
+  population <- y_fit_predict(fit, newdata = newdata, re_formula = NA)
+  conditional <- y_fit_predict(fit, newdata = newdata, re_formula = NULL)
+
+  expect_false(isTRUE(all.equal(population$ypre, conditional$ypre)))
+  expect_equal(
+    conditional$ypre,
+    unname(stats::predict(fit, newdata = newdata, re.form = NULL))
+  )
+})
+
 test_that("fit helpers support glmmTMB models", {
   skip_if_not_installed("glmmTMB")
   fit <- suppressWarnings(glmmTMB::glmmTMB(

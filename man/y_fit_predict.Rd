@@ -4,7 +4,7 @@
 \alias{y_fit_predict}
 \title{Generate fitted values and confidence intervals}
 \usage{
-y_fit_predict(fit, newdata = NULL)
+y_fit_predict(fit, newdata = NULL, re_formula = NA)
 }
 \arguments{
 \item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} model.}
@@ -12,13 +12,17 @@ y_fit_predict(fit, newdata = NULL)
 \item{newdata}{\code{NULL} uses the model data; a data frame supplies predictor
 values directly; a character value such as \code{"grid"} generates a balanced grid
 across the observed predictor ranges.}
+
+\item{re_formula}{Random-effect handling. \code{NA} gives population-level
+predictions, while \code{NULL} retains all random effects.}
 }
 \value{
 A data frame containing fitted values and intervals.
 }
 \description{
 Returns observed data with fitted values and 95\% confidence
-intervals for supported models. Random effects are excluded from prediction.
+intervals for supported models. By default, predictions use fixed effects
+only; \code{re_formula} controls whether random effects are retained.
 }
 \details{
 Automatic grids include all fixed-effect predictors. Numeric

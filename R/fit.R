@@ -118,12 +118,15 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE,
 
 #' @title Generate fitted values and confidence intervals
 #' @description Returns observed data with fitted values and 95% confidence
-#' intervals for supported models. Random effects are excluded from prediction.
+#' intervals for supported models. By default, predictions use fixed effects
+#' only; `re_formula` controls whether random effects are retained.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit` model.
 #' @param newdata `NULL` uses the model data; a data frame supplies predictor
 #' values directly; a character value such as `"grid"` generates a balanced grid
 #' across the observed predictor ranges.
+#' @param re_formula Random-effect handling. `NA` gives population-level
+#' predictions, while `NULL` retains all random effects.
 #' @return A data frame containing fitted values and intervals.
 #' @details Automatic grids include all fixed-effect predictors. Numeric
 #' variables use evenly spaced values across their observed range, while
@@ -143,9 +146,9 @@ y_fit_predict <- function(fit, newdata = NULL, re_formula = NA){
       insight::get_datagrid(fit, length = grid.length, range = 'range', protect_integers = FALSE,
                             include_response = FALSE, include_random = FALSE) -> df} else {newdata -> df}
 
-    insight::get_predicted(fit, data = df, predict = 'response', ci = .95, re_formula = re_formula) %>%
-      as.data.frame() %>% select(1:4) %>% rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>%
-      select(!ypre.se) -> ypre
+    insight::get_predicted(fit, data = df, predict = 'response', ci = .95,
+      include_random = is.null(re_formula)) %>% as.data.frame() %>% select(1:4) %>%
+      rename_with(~c("ypre", "ypre.se", "ypre.Q2.5", "ypre.Q97.5")) %>% select(!ypre.se) -> ypre
     df %>% cbind(ypre) %>% as_tibble() %>% return()
   }
 
