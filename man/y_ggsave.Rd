@@ -61,7 +61,7 @@ y_ggsave(
 
 \item{legend.position}{Legend position.}
 
-\item{...}{Additional ggplot2 theme elements.}
+\item{...}{Additional theme elements passed to \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 }
 \value{
 The output path invisibly when saving; otherwise the printed plot.

@@ -31,7 +31,8 @@ remainder as Others .}
 
 \item{show.adonis}{Whether to add PERMANOVA results to the plot.}
 
-\item{...}{Additional arguments passed to underlying methods.}
+\item{...}{Additional arguments passed to \code{\link[=yy_adonis_summary]{yy_adonis_summary()}} when
+\code{show.adonis = TRUE}, including \code{show.p}, \code{show.p.pairs}, or \code{rr.inc}.}
 }
 \value{
 A named list with \code{simper.res}, \code{simper.res.mean}, and \code{plot}.

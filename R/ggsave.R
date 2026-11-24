@@ -69,7 +69,7 @@ no_axis_x_title <- ggplot2::theme(axis.title.x = ggplot2::element_blank())
 #' @param dpi Output resolution in dots per inch. Defaults to 300.
 #' @param show.legend One of `"collect"`, `"last"`, `"no"`, `"all"`, or "keep"`.
 #' @param legend.position Legend position.
-#' @param ... Additional ggplot2 theme elements.
+#' @param ... Additional theme elements passed to [ggplot2::theme()].
 #' @return The output path invisibly when saving; otherwise the printed plot.
 #' @examples
 #' library(ggplot2)

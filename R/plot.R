@@ -13,7 +13,6 @@
 #' @param hline Optional horizontal reference line or "ck" .
 #' @param vline Optional vertical reference line.
 #' @param point.size Point size.
-#' @param ... Additional arguments passed to underlying methods.
 #' @return A ggplot object.
 #'
 #' @family plotting
@@ -21,7 +20,7 @@
 #'
 
 y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'linebox'), cols = NULL,
-                        fig.name = NULL, error.bar = c('sd', 'se'), hline = FALSE, vline = FALSE, point.size = 1.5, ...){
+                        fig.name = NULL, error.bar = c('sd', 'se'), hline = FALSE, vline = FALSE, point.size = 1.5){
     # df must be y, x, group
     if(plot[1] == 'vio'){yy_check_pkg("ggbeeswarm")}; if(plot[1] == 'viobox'){yy_check_pkg("ggdist")}
 
@@ -74,7 +73,8 @@ y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'lin
 #' @param ylim Optional y-axis limits.
 #' @param hline Whether to add a horizontal guide below the observed points.
 #' @param rr.inc Numeric controls for label spacing.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [y_classplot()], including `cols`,
+#' `fig.name`, `error.bar`, `vline`, or `point.size`.
 #' @return A ggplot object.
 #'
 #' @family plotting

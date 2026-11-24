@@ -33,7 +33,8 @@ y_fit_classplot(
 
 \item{rr.inc}{Numeric controls for label spacing.}
 
-\item{...}{Additional arguments passed to underlying methods.}
+\item{...}{Additional arguments passed to \code{\link[=y_classplot]{y_classplot()}}, including \code{cols},
+\code{fig.name}, \code{error.bar}, \code{vline}, or \code{point.size}.}
 }
 \value{
 A ggplot object.

@@ -6,11 +6,24 @@ test_that("plotting helpers return usable objects", {
   p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) +
     ggplot2::geom_point()
 
-  expect_s3_class(y_ggsave(p, save = FALSE), "ggplot")
+  expect_s3_class(
+    y_ggsave(
+      p,
+      save = FALSE,
+      plot.background = ggplot2::element_rect(fill = "white", linewidth = 0)
+    ),
+    "ggplot"
+  )
   expect_s3_class(
     y_classplot(mtcars[, c("mpg", "cyl", "am")], plot = "bar"),
     "ggplot"
   )
+})
+
+test_that("class plotting exposes only documented arguments", {
+  expect_false("..." %in% names(formals(y_classplot)))
+  expect_true("..." %in% names(formals(y_fit_classplot)))
+  expect_true("..." %in% names(formals(y_fit_partial_plot)))
 })
 
 test_that("y_corrplot handles negative-only limits", {

@@ -10,8 +10,7 @@ yy_adonis_summary(
   show.p = 0.05,
   show.p.pairs = c("CK", ""),
   xylim = 1,
-  rr.inc = 0.05,
-  ...
+  rr.inc = 0.05
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ yy_adonis_summary(
 \item{xylim}{Symmetric ordination-axis limits.}
 
 \item{rr.inc}{Numeric controls for label spacing.}
-
-\item{...}{Additional arguments passed to underlying methods.}
 }
 \value{
 A list containing formatted PERMANOVA labels.

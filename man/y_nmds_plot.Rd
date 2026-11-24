@@ -4,7 +4,16 @@
 \alias{y_nmds_plot}
 \title{Draw a non-metric multidimensional scaling ordination}
 \usage{
-y_nmds_plot(spe, trt, env = NULL, ...)
+y_nmds_plot(
+  spe,
+  trt,
+  env = NULL,
+  show.p = 0.05,
+  show.p.pairs = c("CK", ""),
+  xylim = 1,
+  rr.inc = 0.05,
+  ...
+)
 }
 \arguments{
 \item{spe}{A community matrix with samples in rows.}
@@ -13,7 +22,16 @@ y_nmds_plot(spe, trt, env = NULL, ...)
 
 \item{env}{Environmental variables.}
 
-\item{...}{Additional arguments passed to underlying methods.}
+\item{show.p}{Significance threshold for pairwise PERMANOVA results.}
+
+\item{show.p.pairs}{Text filter for displayed pairwise PERMANOVA results.}
+
+\item{xylim}{Symmetric ordination-axis limits.}
+
+\item{rr.inc}{Numeric controls for PERMANOVA label spacing.}
+
+\item{...}{Additional arguments passed to \code{\link[=yy_ord_plot]{yy_ord_plot()}}, including
+\code{cols}, \code{shape}, \code{n.mark}, \code{show.point}, or \code{show.density}.}
 }
 \value{
 A ggplot object.

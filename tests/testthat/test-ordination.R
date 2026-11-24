@@ -8,11 +8,26 @@ test_that("ordination helpers run on vegan example data", {
   trt <- factor(rep(c("CK", "A", "B"), each = 4))
 
   expect_s3_class(y_alpha_diversity(spe), "data.frame")
-  expect_s3_class(y_pca_plot(spe, trt), "ggplot")
-  expect_s3_class(y_pcoa_plot(spe, trt), "ggplot")
+  expect_s3_class(y_pca_plot(spe, trt, cols = color_y(3)), "ggplot")
+  expect_s3_class(
+    y_pcoa_plot(spe, trt, show.p = 0.1, rr.inc = 0.04),
+    "ggplot"
+  )
   expect_s3_class(y_rda_plot(spe, trt, env), "ggplot")
   expect_s3_class(y_cca_plot(spe, trt, env), "ggplot")
   expect_s3_class(y_db_rda_plot(spe, trt, env), "ggplot")
+})
+
+test_that("ordination forwarding signatures are explicit", {
+  expect_false("..." %in% names(formals(ytips:::yy_adonis_summary)))
+  expect_false("..." %in% names(formals(ytips:::yy_ord_plot)))
+
+  pcoa.args <- names(formals(y_pcoa_plot))
+  nmds.args <- names(formals(y_nmds_plot))
+  expect_true(all(c("show.p", "show.p.pairs", "xylim", "rr.inc", "...") %in%
+    pcoa.args))
+  expect_true(all(c("show.p", "show.p.pairs", "xylim", "rr.inc", "...") %in%
+    nmds.args))
 })
 
 test_that("Price equation plotting uses default colors", {

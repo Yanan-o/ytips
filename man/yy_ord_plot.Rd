@@ -18,9 +18,7 @@ yy_ord_plot(
   shape = NULL,
   lab.xy = "Dim",
   legend.title = "Group",
-  output = "p",
-  show.density = FALSE,
-  ...
+  show.density = FALSE
 )
 }
 \arguments{
@@ -52,14 +50,10 @@ labels in column 2.}
 
 \item{legend.title}{Legend title.}
 
-\item{output}{Output mode; see the function description.}
-
 \item{show.density}{Whether to add marginal density plots.}
-
-\item{...}{Additional arguments passed to underlying methods.}
 }
 \value{
-A ggplot object or a list containing plotting data.
+A ggplot object.
 }
 \description{
 Draws ordination points, hulls, arrows and fit labels.

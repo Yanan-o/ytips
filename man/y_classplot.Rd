@@ -12,8 +12,7 @@ y_classplot(
   error.bar = c("sd", "se"),
   hline = FALSE,
   vline = FALSE,
-  point.size = 1.5,
-  ...
+  point.size = 1.5
 )
 }
 \arguments{
@@ -34,8 +33,6 @@ labels in column 2.}
 \item{vline}{Optional vertical reference line.}
 
 \item{point.size}{Point size.}
-
-\item{...}{Additional arguments passed to underlying methods.}
 }
 \value{
 A ggplot object.

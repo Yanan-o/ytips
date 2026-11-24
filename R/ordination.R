@@ -304,7 +304,8 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 #' @param show.contri Cumulative contribution retained before grouping the
 #' remainder as Others .
 #' @param show.adonis Whether to add PERMANOVA results to the plot.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [yy_adonis_summary()] when
+#' `show.adonis = TRUE`, including `show.p`, `show.p.pairs`, or `rr.inc`.
 #' @return A named list with `simper.res`, `simper.res.mean`, and `plot`.
 #'
 #' @family ordination
@@ -312,7 +313,7 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 #'
 
 y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
-                          show.contri = 0.7, show.adonis = TRUE, ... ){
+                          show.contri = 0.7, show.adonis = TRUE, show.p.pairs = '', ... ){
 
   if(is.null(cols)){RColorBrewer::brewer.pal(n = 9, "Set1") %>% scales::alpha(., .8) -> cols}
   if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt; factor(trt, levels = unique(trt)) -> trt}; data.frame(row.names(spe), trt) -> Trt
@@ -333,7 +334,7 @@ y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
      ggplot() + geom_bar(aes(x = pairs, y = sim.mean, fill = species), stat = "identity", width = .8) + scale_fill_manual(values = cols) + theme_classic() +
      theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.key.size = unit(.16, 'in')) + ylim(0, ylim) + labs(fill = 'Species', x = '', y = 'Bray-Curtis indices') -> p
 
-  if(show.adonis){yy_adonis_summary(spe, trt, xylim = .5*ylim, ...) -> adonis.txt;
+  if(show.adonis){yy_adonis_summary(spe, trt, xylim = .5*ylim, show.p.pairs = show.p.pairs,...) -> adonis.txt;
     p + annotate("text", x = .6, y = Inf, label = adonis.txt[[1]], parse = TRUE, size = 2.8, hjust = 'left', vjust = 1.3) +
         geom_text(data = adonis.txt[[2]], aes(x = .6, y = .48*ylim + y, label = txt), size = 2.5, vjust = "bottom", hjust = 'left') -> p}
 
@@ -385,14 +386,13 @@ y_beta_indispecies <- function(spe, trt){
 #' @param show.p.pairs Text filter for pairwise PERMANOVA results.
 #' @param xylim Symmetric ordination-axis limits.
 #' @param rr.inc Numeric controls for label spacing.
-#' @param ... Additional arguments passed to underlying methods.
 #' @return A list containing formatted PERMANOVA labels.
 #'
 #' @family ordination
 #' @keywords internal
 #'
 
-yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('CK', ''), xylim = 1, rr.inc = .05, ...){
+yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('', 'CK'), xylim = 1, rr.inc = .05){
 
   yy_check_pkg("pairwiseAdonis", 'pak::pak("pmartinezarbizu/pairwiseAdonis")')
 
@@ -528,17 +528,15 @@ y_rdacca_hp <- function(spe, env, env.list = NULL, method =  c('RDA', 'dbRDA', '
 #' @param shape Point shapes.
 #' @param lab.xy Ordination-axis prefix.
 #' @param legend.title Legend title.
-#' @param output Output mode; see the function description.
 #' @param show.density Whether to add marginal density plots.
-#' @param ... Additional arguments passed to underlying methods.
-#' @return A ggplot object or a list containing plotting data.
+#' @return A ggplot object.
 #'
 #' @family ordination
 #' @keywords internal
 #'
 
 yy_ord_plot <- function(point.df, arrow.df = NULL, eig = NULL, rr.txt = NULL, n.mark = 0, fig.name = NULL, arrow.length = 1, xylim = 1,
-                       show.point = TRUE, cols = NULL, shape = NULL, lab.xy = "Dim", legend.title = 'Group', output = 'p', show.density = FALSE, ...){
+                       show.point = TRUE, cols = NULL, shape = NULL, lab.xy = "Dim", legend.title = 'Group', show.density = FALSE){
   # point.df should include Dim1, Dim2, trt.
   # arrow.df should include index, xend, yend, color.
   # eig is the feature root; Dim is the feature value.
@@ -575,7 +573,7 @@ yy_ord_plot <- function(point.df, arrow.df = NULL, eig = NULL, rr.txt = NULL, n.
 
   if(!is.null(rr.txt)){p + annotate("text", x = -xylim, y = xylim, label = rr.txt, parse = TRUE, size = 2.8, hjust = 'left', vjust = .38) -> p}
   if(show.density){p + theme(legend.position = c(.9,.8)) -> p; ggExtra::ggMarginal(p, type = "density", groupColour = TRUE, groupFill = TRUE) %>% ggplotify::as.ggplot() -> p}
-  if(output != 'p'){return(list('point.df' = point.df, 'plot' = p))} else{return(p)}
+  return(p)
 }
 
 
@@ -586,7 +584,8 @@ yy_ord_plot <- function(point.df, arrow.df = NULL, eig = NULL, rr.txt = NULL, n.
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
 #' @param show.arrow Whether or how environmental arrows are displayed.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @examples
@@ -620,7 +619,12 @@ y_pca_plot <- function(spe, trt, show.arrow = TRUE, ...){
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
 #' @param env Environmental variables.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param show.p Significance threshold for pairwise PERMANOVA results.
+#' @param show.p.pairs Text filter for displayed pairwise PERMANOVA results.
+#' @param xylim Symmetric ordination-axis limits.
+#' @param rr.inc Numeric controls for PERMANOVA label spacing.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @examples
@@ -632,16 +636,17 @@ y_pca_plot <- function(spe, trt, show.arrow = TRUE, ...){
 #' @export
 #'
 
-y_pcoa_plot <- function(spe, trt, env = NULL, ...){
+y_pcoa_plot <- function(spe, trt, env = NULL, show.p = 0.05, show.p.pairs = '',
+                        xylim = 1, rr.inc = .05, ...){
 
     if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt}
     PCoA <- vegan::vegdist(spe, method = "bray") %>% stats::cmdscale(., k = 3, eig = TRUE)
       PCoA$points[, 1:2] %>% cbind.data.frame(., trt) -> point.df
-      yy_adonis_summary(spe = spe, trt = trt, ...) -> adonis.txt
+      yy_adonis_summary(spe = spe, trt = trt, show.p = show.p, show.p.pairs = show.p.pairs, xylim = xylim, rr.inc = rr.inc) -> adonis.txt
 
     if(!is.null(env)){yy_envfit_arrow(PCoA, vegan::decostand(env, "standardize")) -> arrow.df} else{NULL -> arrow.df}
 
-    yy_ord_plot(point.df, arrow.df, PCoA$eig, rr.txt = adonis.txt$rr.txt, lab.xy = 'PCoA', ...) +
+    yy_ord_plot(point.df, arrow.df, PCoA$eig, rr.txt = adonis.txt$rr.txt, xylim = xylim, lab.xy = 'PCoA', ...) +
       geom_text(data = adonis.txt[[2]], aes(x = x, y = y, label = txt), size = 2.5, vjust = "bottom", hjust = "left") %>%
       return()
     }
@@ -654,23 +659,28 @@ y_pcoa_plot <- function(spe, trt, env = NULL, ...){
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
 #' @param env Environmental variables.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param show.p Significance threshold for pairwise PERMANOVA results.
+#' @param show.p.pairs Text filter for displayed pairwise PERMANOVA results.
+#' @param xylim Symmetric ordination-axis limits.
+#' @param rr.inc Numeric controls for PERMANOVA label spacing.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @family ordination
 #' @export
 #'
 
-y_nmds_plot <- function(spe, trt, env = NULL, ...){
+y_nmds_plot <- function(spe, trt, env = NULL, show.p = 0.05, show.p.pairs = '', xylim = 1, rr.inc = .05, ...){
 
     if(missing(trt)){str_remove_all(row.names(spe), "\\d+") -> trt}
     NMDS <- vegan::metaMDS(spe, distance = 'bray', k = 3, trymax = 100)
       NMDS$points[, 1:2] %>% cbind.data.frame(., trt) -> point.df
-      yy_adonis_summary(spe = spe, trt = trt, ...) -> adonis.txt
+      yy_adonis_summary(spe = spe, trt = trt, show.p = show.p, show.p.pairs = show.p.pairs, xylim = xylim, rr.inc = rr.inc) -> adonis.txt
 
     if(is.null(env) == FALSE){yy_envfit_arrow(NMDS, vegan::decostand(env, "standardize")) -> arrow.df} else{NULL -> arrow.df}
 
-    yy_ord_plot(point.df, arrow.df, eig = NULL, rr.txt = adonis.txt$rr.txt, lab.xy = 'NMDS', ...) +
+    yy_ord_plot(point.df, arrow.df, eig = NULL, rr.txt = adonis.txt$rr.txt, xylim = xylim, lab.xy = 'NMDS', ...) +
       geom_text(data = adonis.txt[[2]], aes(x = x, y = y, label = txt), size = 2.5, vjust = "bottom", hjust = "left") +
       annotate('text', x = Inf, y = -Inf, label = paste0('Stress = ', round(NMDS$stress, 2)), size = 3, vjust = -1, hjust = "right") %>%
     return()
@@ -686,7 +696,8 @@ y_nmds_plot <- function(spe, trt, env = NULL, ...){
 #' @param env Environmental variables.
 #' @param env.condition Optional conditioning variables for partial ordination.
 #' @param show.arrow Whether or how environmental arrows are displayed.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @examples
@@ -732,7 +743,8 @@ y_rda_plot <- function(spe, trt, env, env.condition = NULL, show.arrow = c('bipl
 #' @param env Environmental variables.
 #' @param env.condition Optional conditioning variables for partial ordination.
 #' @param show.arrow Whether or how environmental arrows are displayed.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @family ordination
@@ -770,7 +782,8 @@ y_cca_plot <- function(spe, trt, env, env.condition = NULL, show.arrow = c('bipl
 #' @param env Environmental variables.
 #' @param env.condition Optional conditioning variables for partial ordination.
 #' @param show.arrow Whether or how environmental arrows are displayed.
-#' @param ... Additional arguments passed to underlying methods.
+#' @param ... Additional arguments passed to [yy_ord_plot()], including
+#' `cols`, `shape`, `n.mark`, `show.point`, or `show.density`.
 #' @return A ggplot object.
 #'
 #' @family ordination

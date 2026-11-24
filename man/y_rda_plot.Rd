@@ -24,7 +24,8 @@ y_rda_plot(
 
 \item{show.arrow}{Whether or how environmental arrows are displayed.}
 
-\item{...}{Additional arguments passed to underlying methods.}
+\item{...}{Additional arguments passed to \code{\link[=yy_ord_plot]{yy_ord_plot()}}, including
+\code{cols}, \code{shape}, \code{n.mark}, \code{show.point}, or \code{show.density}.}
 }
 \value{
 A ggplot object.
