@@ -68,6 +68,30 @@ test_that("partial plots support lm and lmer model options", {
     names(lmer_result$df_resid)))
 })
 
+test_that("line plots combine multiple mixed models", {
+  fits <- list(
+    "All sample" = lmerTest::lmer(
+      Reaction ~ Days + (1 | Subject),
+      data = lme4::sleepstudy
+    ),
+    "Func all" = lmerTest::lmer(
+      Reaction ~ Days + (1 | Subject),
+      data = lme4::sleepstudy
+    ),
+    "Func x" = lmerTest::lmer(
+      Reaction ~ Days + (1 | Subject),
+      data = lme4::sleepstudy
+    )
+  )
+
+  plot <- suppressWarnings(y_fit_linesplot(
+    fits,
+    cols = color_y(3),
+    show.se = TRUE
+  ))
+  expect_s3_class(plot, "ggplot")
+})
+
 test_that("decomposition plots accept custom response columns", {
   set.seed(2)
   df <- data.frame(

@@ -172,8 +172,8 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
       data.frame(txt = rbind(paste0(fit.res$rr.txt[,1], collapse = '~~'), fit.res$Est.txt$p.txt), P = fit.res$Est.txt$p) %>% mutate(line = "line") -> df_txt0 }
 
     # plot
-    df_fit %>% rename('y' = name_vars[1], 'x' = name_vars[2]) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
-    df_pre %>% rename('x' = 1) %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
+    df_fit %>% rename('y' = all_of(name_vars[1]), 'x' = all_of(name_vars[2])) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
+    df_pre %>% rename('x' = all_of(name_vars[2])) %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
     if(is.null(fig.name)){name_vars -> fig_name} else{fig.name[match(name_vars, fig.name[,1]), 2] -> fig_name}
     if(is.null(ylim)){.9*min(df_fit$y, df_pre$ypre.Q2.5) -> ymin; 1.1*max(df_fit$y, df_pre$ypre.Q97.5) -> ymax} else{ylim[1] -> ymin; ylim[2] -> ymax}
     if(is.null(cols)){color_y(n = length(fit.list)) -> cols}; if(is.null(rr.loc)){c(min(df_pre$x), ymax) -> rr.loc}
