@@ -10,7 +10,7 @@ y_fit_predict(fit, newdata = NULL)
 \item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} model.}
 
 \item{newdata}{\code{NULL} uses the model data; a data frame supplies predictor
-values directly; a character value such as \code{"new"} generates a balanced grid
+values directly; a character value such as \code{"grid"} generates a balanced grid
 across the observed predictor ranges.}
 }
 \value{
@@ -23,8 +23,9 @@ intervals for supported models. Random effects are excluded from prediction.
 \details{
 Automatic grids include all fixed-effect predictors. Numeric
 variables use evenly spaced values across their observed range, while
-categorical variables retain their observed levels. The grid is capped near
-10,000 combinations by reducing the number of numeric values per predictor.
+categorical variables retain their observed levels. Up to two numeric
+predictors use 100 values each; with more predictors, the number of values
+per predictor is reduced to keep the grid near 10,000 combinations.
 }
 \seealso{
 Other fitting:

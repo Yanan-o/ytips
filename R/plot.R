@@ -159,31 +159,34 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
    # lines.list: a list includes multiple fit and each fit can be crafted as a line (name of sub-list is the line_name)
 
     if(class(fit.list)[1] == 'list'){
-      fit.list %>% map(~{y_fit_summary(.x, output = 'all', diagnostics = FALSE)}) -> fit.res; fit.res[[1]] %>% .$df %>% names() -> name_vars
-      fit.list %>% map(~{.x %>% y_fit_predict() %>% rename('y' = 1, 'x' = 2)}) %>%
-        bind_rows(.id = "line") %>% mutate(line = factor(line, levels = unique(line)))-> df_pre
+      fit.list %>% map(~{y_fit_summary(.x, output = 'all', diagnostics = FALSE)}) -> fit.res;
+      fit.res %>% map('df') %>% bind_rows(.id = 'line') -> df_fit; df_fit %>% names() -> name_vars;
+      fit.list %>% map(~{.x %>% y_fit_predict(newdata = 'grid')}) %>% bind_rows(.id = 'line') -> df_pre
         map(fit.res, "Est.txt") %>% map(~data.frame(P = .x$p, P.txt = .x$p.txt)) %>% bind_rows(.id = 'line') -> P
         map(fit.res, "rr.txt") %>% map(~data.frame(txt = paste0(.x[,1], collapse = '~~') )) %>% bind_rows() %>%
         cbind(., P) %>% mutate(txt = paste0(txt, '~~', P.txt)) -> df_txt0
       } else{
-      fit.list %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res; fit.res$df -> df; names(df) -> name_vars
-      fit.list %>% y_fit_predict() %>% rename('y' = 1, 'x' = 2) %>% mutate(line = "line") -> df_pre
+      fit.list %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res;
+      fit.res$df %>% mutate(line = 'line') -> df_fit; names(df_fit) -> name_vars;
+      fit.list %>% y_fit_predict(newdata = 'grid') %>% mutate(line = 'line') -> df_pre
       data.frame(txt = rbind(paste0(fit.res$rr.txt[,1], collapse = '~~'), fit.res$Est.txt$p.txt), P = fit.res$Est.txt$p) %>% mutate(line = "line") -> df_txt0 }
 
     # plot
+    df_fit %>% rename('y' = 1, 'x' = 2) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
+    df_pre %>% rename('x' = 1) %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
     if(is.null(fig.name)){name_vars -> fig_name} else{fig.name[match(name_vars, fig.name[,1]), 2] -> fig_name}
-    if(is.null(ylim)){.9*min(df_pre$y, df_pre$ypre.Q2.5) -> ymin; 1.1*max(df_pre$y, df_pre$ypre.Q97.5) -> ymax} else{ylim[1] -> ymin; ylim[2] -> ymax}
+    if(is.null(ylim)){.9*min(df_fit$y, df_pre$ypre.Q2.5) -> ymin; 1.1*max(df_fit$y, df_pre$ypre.Q97.5) -> ymax} else{ylim[1] -> ymin; ylim[2] -> ymax}
     if(is.null(cols)){color_y(n = length(fit.list)) -> cols}; if(is.null(rr.loc)){c(min(df_pre$x), ymax) -> rr.loc}
     df_txt0 %>% mutate(linetype = ifelse(P<show.p, 1, show.p.lty), yposition = rr.loc[2]-rr.inc[1]*c(0:(nrow(.)-1)+rr.inc[2])*(ymax-ymin), xposition = rr.loc[1]) -> df_txt
 
-    ggplot(df_pre) + geom_point(aes(x = x, y = y, color = line), pch = 19, alpha = point.alpha, size = point.size) +
-      geom_line(aes(x = x, y = ypre, color = line, lty = line),  size = line.size, alpha = line.alpha) +
+    ggplot() + geom_point(data = df_fit, aes(x = x, y = y, color = line), pch = 19, alpha = point.alpha, size = point.size) +
+      geom_line(data = df_pre, aes(x = x, y = ypre, color = line, lty = line),  size = line.size, alpha = line.alpha) +
       geom_text(data = df_txt, aes(x = xposition, y = yposition, color = line, label = txt), hjust = "left", parse = TRUE, alpha = line.alpha, size = 2.8, show.legend = FALSE) +
       scale_color_manual("Group", values = cols) + scale_linetype_manual(values = df_txt[,"linetype"], guide = "none") + labs(x = fig_name[[2]], y = fig_name[[1]]) -> p
 
     if(length(fit.list) == 1){p + geom_text(data = df_txt, aes(x = xposition, y = yposition, label = txt), hjust = "left", parse = TRUE,  size = 2.8, show.legend = FALSE) -> p}
-    if(show.smooth){p + geom_smooth(aes(x = x, y = y, color = line, fill = line), size = .5, alpha = .1, lty = 1, se = show.se) + scale_fill_manual("Group", values = cols) -> p}
-    if(show.se){p + geom_ribbon(aes(x = x, ymin = ypre.Q2.5, ymax = ypre.Q97.5, fill = line), alpha = .1) + scale_fill_manual("Group", values = cols) -> p}
+    if(show.smooth){p + geom_smooth(data = df_fit, aes(x = x, y = y, color = line, fill = line), size = .5, alpha = .1, lty = 1, se = show.se) + scale_fill_manual("Group", values = cols) -> p}
+    if(show.se){p + geom_ribbon(data = df_pre, aes(x = x, ymin = ypre.Q2.5, ymax = ypre.Q97.5, fill = line), alpha = .1) + scale_fill_manual("Group", values = cols) -> p}
     p +  theme_y() + ylim(ymin, ymax) %>% return()
   }
 
@@ -213,7 +216,7 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
 y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show.p = 0.05, lty.p = 2,
                           show.se = FALSE, txt = NULL, txt.cols = '#FF0000', txt.size = 8, txt.position = NULL){
 
-    fit %>% y_fit_predict() %>% rename('y' = 1, 'x' = 2) -> df_pre
+    fit %>% y_fit_predict(newdata = 'grid') %>% rename('x' = 1) -> df_pre
     fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) %>% .$Est.txt %>% select(Estimate, p, p.sig) -> txt0
 
     if(is.null(txt)){txt0$p.sig -> txt} else{ txt -> txt}
@@ -248,11 +251,7 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
     names(df)[1] -> y; names(df)[2] -> x1;  names(df)[3] -> x2
     if(is.null(fig.name)){names(df) -> fig_name} else{fig.name[match(names(df), fig.name[,1]), 2] -> fig_name}
 
-    expand.grid(
-      x1 = seq(min(df[[x1]]), max(df[[x1]]), length = 100),
-      x2 = seq(min(df[[x2]]), max(df[[x2]]), length = 100)) %>% rename_with(~c(x1, x2))-> new.xx
-
-    y_fit_predict(fit, newdata = new.xx) %>% rename('x1' = 1, 'x2' = 2) -> df_pre.xx
+    y_fit_predict(fit, newdata = 'grid') %>% rename('x1' = 1, 'x2' = 2) -> df_pre.xx
 
     ggplot(df_pre.xx, aes(x = x1, y = x2)) + geom_tile(aes(fill = ypre)) +
       geom_contour(aes(z = ypre), color = "white", bins = 30, linewidth = .1) +
