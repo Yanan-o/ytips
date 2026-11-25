@@ -4,18 +4,17 @@
 \alias{y_fit_msetable}
 \title{Build a wide fitted-model table}
 \usage{
-y_fit_msetable(fit, dig = 3, show = c("est.p", "mse.p"))
+y_fit_msetable(fit, digits = 3, show = c("est", "mse"))
 }
 \arguments{
 \item{fit}{A single fitted model accepted by \code{\link[=y_fit_summary]{y_fit_summary()}}. A model with
-several predictors is supported when \code{show = "est.p"}. For
-\code{show = "mse.p"}, the model must contain exactly one categorical predictor,
-such as \code{y ~ x}.}
+several predictors is supported when \code{show = "est"}. For \code{show = "mse"},
+the model must contain exactly one categorical predictor, such as \code{y ~ x}.}
 
-\item{dig}{Number of decimal places.}
+\item{digits}{Number of decimal places.}
 
-\item{show}{\code{"est.p"} displays coefficient estimates with significance marks;
-\code{"mse.p"} displays observed group means and standard errors.}
+\item{show}{\code{"est"} displays coefficient estimates with significance marks;
+\code{"mse"} displays observed group means and standard errors.}
 }
 \value{
 A one-row wide data frame.

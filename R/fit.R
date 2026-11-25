@@ -96,12 +96,12 @@ y_fit_summary <- function(fit){
     Est.txt %>% mutate(x = gsub(paste0(x.name.sub, collapse = "|"), "", x)) -> Est.txt
     Est.txt <- Est.txt[Est.txt$x != "(Intercept)", , drop = FALSE]; rownames(Est.txt) <- NULL
     if("p" %in% names(Est.txt)) {Est.txt %>% mutate(p.sig = cut(p, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  ")),
-      p.txt = ifelse(p < .01, "~`<`~0.01", paste0("~`=`~", round(p, 2))) %>% paste0("italic(p)", .)) -> Est.txt
+      p.txt = ifelse(p < .01, "~`<`~0.01", paste0("~`=`~", formatC(p, format = "f", digits = 2))) %>% paste0("italic(p)", .)) -> Est.txt
       } else { Est.txt %>% mutate(p.sig = NA, p.txt = NA) -> Est.txt }
 
     # RR
     performance::r2(fit) %>% unlist() -> RR; if(any(is.na(RR[1]))){MuMIn::r.squaredGLMM(fit)[2] -> RR[1]};
-    map(RR, ~{.x = ifelse(.x < 0.01, "~`<`~0.01", paste0("~`=`~", round(.x, 2)))}) %>% bind_cols() -> RR
+    map(RR, ~{.x = ifelse(.x < 0.01, "~`<`~0.01", paste0("~`=`~", formatC(.x, format = "f", digits = 2)))}) %>% bind_cols() -> RR
     if(inherits(fit, 'lm')|length(RR) == 1){paste0("R^2", RR[[1]]) -> rr.txt} else{
       rbind(paste0("R[m]^2", RR[[2]]), paste0("R[c]^2", RR[[1]])) -> rr.txt}; data.frame(rr.txt = rr.txt) -> rr.txt
 
@@ -126,8 +126,7 @@ y_fit_summary <- function(fit){
 #' @export
 #'
 
-y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE,
-                          rr.inc = c(.08, 0), diagnostics = TRUE){
+y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.inc = c(.08, 0), diagnostics = TRUE){
 
     if(diagnostics){yy_check_pkg("DHARMa")}
     if(show.random.forest){yy_check_random_forest_dependencies()}
@@ -156,7 +155,7 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE,
       RF.res$RF.result %>% select(x = name_x, X.IncMSE) %>% merge(df.p, ., by = "x", sort = F, all.x = T) %>%
         mutate(X.IncMSE2 = X.IncMSE/max(X.IncMSE)*max.x) -> df.p.RF
       fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(x) -.4, ymax = as.numeric(x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
-        annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F, size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
+        annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F, size = 2.5, label = paste0('In.MSE (%): 0 - ', formatC(max(df.p.RF$X.IncMSE), format = "f", digits = 1))) -> fit.plot
     }
     return(fit.plot)
 }
@@ -170,32 +169,35 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE,
 #' @param fit A single fitted model accepted by [y_fit_summary()]. A model with
 #' several predictors is supported when `show = "est"`. For `show = "mse"`,
 #' the model must contain exactly one categorical predictor, such as `y ~ x`.
-#' @param dig Number of decimal places.
-#' @param show `"est.p"` displays coefficient estimates with significance marks;
-#' `"mse.p"` displays observed group means and standard errors.
+#' @param digits Number of decimal places.
+#' @param show `"est"` displays coefficient estimates with significance marks;
+#' `"mse"` displays observed group means and standard errors.
 #' @return A one-row wide data frame.
 #'
 #' @family fitting
 #' @export
 #'
 
-y_fit_msetable <- function(fit, dig = 3, show = c("est", "mse")){
+y_fit_msetable <- function(fit, digits = 2, show = c("est", "mse")){
 
   fit %>% y_fit_summary() -> fit_res; fit_res$name_x[1] -> name_x
-  is_categorical <- length(fit_res$name_x) == 1 && (is.factor(fit_res$df[[name_x]]) || is.character(fit_res$df[[name_x]]))
+  names(attr(stats::model.matrix(fit), "contrasts")) -> contrast_terms
+  is_categorical <- length(fit_res$name_x) == 1 && (is.factor(fit_res$df[[name_x]]) || is.character(fit_res$df[[name_x]]) ||
+    any(vapply(contrast_terms, function(term){name_x %in% all.vars(stats::as.formula(paste0("~", term)))}, logical(1))))
 
   if(is_categorical){
     data.frame(y = fit_res$df[[fit_res$name_y]], x = fit_res$df[[name_x]]) %>%
       group_by(x) %>% reframe(mean = mean(y, na.rm = TRUE), se = sd(y, na.rm = TRUE)/sqrt(sum(!is.na(y)))) -> mse }
 
   if(show[1] == "mse"){
-     data.frame(x = as.character(mse$x), value = paste0(round(mse$mean, dig), " ± ", round(mse$se, dig))) -> df_table
+	 data.frame(x = as.character(mse$x), value = paste0(formatC(mse$mean, format = "f", digits = digits), " ± ", formatC(mse$se, format = "f", digits = digits))) -> df_table
   } else {
     as.character(fit_res$Est.txt$p.sig) -> sig; sig[is.na(sig)] <- ""
-    paste0(round(fit_res$Est.txt$Estimate, dig), sig) %>% data.frame(x = fit_res$Est.txt$x, value = .) -> est
+    sub("^factor\\([^)]*\\)", "", fit_res$Est.txt$x) -> est_x
+    paste0(formatC(fit_res$Est.txt$Estimate, format = "f", digits = digits), sig) %>% data.frame(x = est_x, value = .) -> est
     if(!is_categorical){est -> df_table} else{
       data.frame(x = as.character(mse$x), mean = mse$mean, se = mse$se) %>% dplyr::left_join(est, by = "x") %>%
-      mutate(value = ifelse(is.na(value), paste0(round(mean, dig), " ± ", round(se, dig)), value)) -> df_table } }
+	      mutate(value = ifelse(is.na(value), paste0(formatC(mean, format = "f", digits = digits), " ± ", formatC(se, format = "f", digits = digits)), value)) -> df_table } }
 
   as.data.frame(as.list(setNames(df_table$value, df_table$x)), check.names = FALSE) %>%
     mutate(R2 = paste0(fit_res$rr.txt[[1]], collapse = " ")) %>% return()

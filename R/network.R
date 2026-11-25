@@ -160,8 +160,8 @@ y_ps_group <- function(ps, group = "", method = 'r.abun', max.group = 8, rank = 
   tax %>% rownames_to_column("otu") %>% mutate(group = ifelse(group %in% g.otu.ok[["group"]], group, "Others")) %>% merge(.,
     g.otu.ok, by = "group") %>% column_to_rownames("otu") %>% mutate(group = as.character(factor(group, levels = c(g.otu.ok[["group"]]))) ) -> tax.out
 
-    if(method[1] != 'r.abun'){tax.out %>% mutate(group.r = paste0(group, " (", num.otu, ", ",round(row.mean, 1), ")")) -> tax.out}
-    if(method[1] == 'r.abun'){tax.out %>% mutate(group.r = paste0(group, " (", num.otu, ", ",round(row.mean*100, 1), "%)")) -> tax.out}
+    if(method[1] != 'r.abun'){tax.out %>% mutate(group.r = paste0(group, " (", num.otu, ", ", formatC(row.mean, format = "f", digits = 1), ")")) -> tax.out}
+    if(method[1] == 'r.abun'){tax.out %>% mutate(group.r = paste0(group, " (", num.otu, ", ", formatC(row.mean*100, format = "f", digits = 1), "%)")) -> tax.out}
 
   if(rank){tax.out %>% arrange(rank) -> tax.out}; if(show.abun){select(tax.out, group.r) -> A} else{select(tax.out, group) -> A};
   if(output == "otu"){A %>% rename_with(~group) %>% return()} else{tax.out %>% unique() %>% remove_rownames() %>% return()}
@@ -715,9 +715,9 @@ yy_network_module_plot <- function(otu.g, group = "v.group", output = "r.abun",
            "num.otu*degree" = num.otu*mean.degree, "mo.num.otu*degree" = mo.num.otu*mo.mean.degree) %>% ungroup() -> otu.mo
 
 
-  if(output == "r.abun"){y = "r.abun"; mo.y = "mo.r.abun"; mo.txt = paste0(round(100*otu.mo$mo.r.abun, 1), "%")}
+  if(output == "r.abun"){y = "r.abun"; mo.y = "mo.r.abun"; mo.txt = paste0(formatC(100*otu.mo$mo.r.abun, format = "f", digits = 1), "%")}
   if(output == "num.otu"){y = "num.otu"; mo.y = "mo.num.otu"; mo.txt = otu.mo$mo.num.otu}
-  if(output == "num.otu*degree"){y = "num.otu*degree"; mo.y = "mo.num.otu*degree"; mo.txt = paste0(otu.mo$mo.num.otu, "; ", round(otu.mo$mo.mean.degree))}
+  if(output == "num.otu*degree"){y = "num.otu*degree"; mo.y = "mo.num.otu*degree"; mo.txt = paste0(otu.mo$mo.num.otu, "; ", formatC(otu.mo$mo.mean.degree, format = "f", digits = 0))}
 
 
   otu.mo %>% select(module, group, y = y, mo.y = mo.y) %>% mutate(mo.txt = mo.txt) %>%
@@ -735,7 +735,7 @@ yy_network_module_plot <- function(otu.g, group = "v.group", output = "r.abun",
   df_p1 %>% dplyr::filter(module %in%  mo.id) %>% merge(., df_mo.id, by = "module") %>%
     mutate(y1 = y/max(mo.y), mo.y1 = mo.y/max(mo.y)) %>%
     group_by(group) %>% mutate(y.sum.group = sum(y)) %>% ungroup() %>%
-    mutate(group.p = paste0(gsub("\\(.*?\\)", "", group), "(", round(y.sum.group/sum(y)*100, 1), "%)")) %>%
+    mutate(group.p = paste0(gsub("\\(.*?\\)", "", group), "(", formatC(y.sum.group/sum(y)*100, format = "f", digits = 1), "%)")) %>%
     arrange(group) %>% mutate(group.p = factor(group.p, levels = unique(group.p))) -> df_p
 
   data.frame(g = unique(otu.g$v.group)) %>% mutate(col = v.cols[1:length(g)]) %>% dplyr::filter(g %in% df_p$group) %>% pull(col) -> v.cols

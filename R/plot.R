@@ -107,7 +107,7 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
         mutate(p.sig = ifelse(p.value < .01, "**", ifelse(p.value < .05, '*', " ")), x = gsub(' -.*', '',contrast)) -> est.p }
 
       car::Anova(fit) %>% data.frame() %>% .[1,] %>%  select(contains('Pr')) %>% rename_with(~'P') %>%
-      mutate(P = ifelse(P < 0.01,  "~`<`~0.01", paste0("~`=`~", round(P, 2))) %>% paste0("italic(p)", .) ) -> P.txt
+      mutate(P = ifelse(P < 0.01,  "~`<`~0.01", paste0("~`=`~", formatC(P, format = "f", digits = 2))) %>% paste0("italic(p)", .) ) -> P.txt
 
     # rr.txt & plot
       if(pairwise){ rbind(paste0(rr.txt[,1], collapse = '~~'), P.txt$P) %>% data.frame(rr.txt = .) -> rr.txt

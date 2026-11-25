@@ -320,7 +320,7 @@ y_psem_boot <- function(sem.formula, sem.data, nrep = 0, show.p = 0.1, show.est 
          # SEM plot
          if(show.est == "ustd"){"Estimate" -> effect.size} else{"Std.Estimate" -> effect.size}
 
-            sem.results$Cstat %>% round(3) -> Fisher.C
+            sem.results$Cstat -> Fisher.C
             sem.results$R2 %>% select(nodes = Response, m.R = Marginal) -> RR
             sem.results$coefficients %>% select(nodes = Response, Est = all_of(effect.size), P.Value) %>%
               mutate(P.sig = cut(P.Value, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  "))) -> PP
@@ -329,16 +329,16 @@ y_psem_boot <- function(sem.formula, sem.data, nrep = 0, show.p = 0.1, show.est 
 
           sem_graph$global_attrs <-
             rbind(sem_graph$global_attrs,
-                  data.frame(attr = "label", value = paste0(c("Fisher C = ", "DF = ", "P-value = "), Fisher.C, collapse = ", "), attr_type = "graph"),
+                  data.frame(attr = "label", value = paste0(c("Fisher C = ", "DF = ", "P-value = "), formatC(unlist(Fisher.C), format = "f", digits = 3), collapse = ", "), attr_type = "graph"),
                   data.frame(attr = c("labelloc", "fontsize", "fontname"), value = c("b", "10", "Times-Italic"), attr_type = "graph"))
 
           sem_graph$nodes_df <- sem_graph$nodes_df %>%
             mutate(fontsize = 7, fontcolor = "black", width = .8, height = .42, color = rgb(0, 0, 0, .5), fillcolor = rgb(0, 0, 0, alpha = 0)) %>%
             mutate(m.R = ifelse(nodes %in% RR$nodes, RR$m.R[match(nodes, RR$nodes)], NA)) %>%
-            mutate(label = ifelse(!is.na(m.R), paste0(label, "\nm.R^2 = ", round(m.R, 2)), label))
+            mutate(label = ifelse(!is.na(m.R), paste0(label, "\nm.R^2 = ", formatC(m.R, format = "f", digits = 2)), label))
 
           sem_graph$edges_df <- sem_graph$edges_df %>%
-            mutate(fontsize = 6, arrowsize = .5, label = round(as.numeric(PP$Est), 2), P.sig = PP$P.sig) %>%
+            mutate(fontsize = 6, arrowsize = .5, label = formatC(as.numeric(PP$Est), format = "f", digits = 2), P.sig = PP$P.sig) %>%
             mutate(color = ifelse(as.numeric(label) >= 0, "steelblue2", "deeppink2"), fontcolor = "black",
                    style = ifelse(P.sig == "  ", style, "solid"), label = paste0(label, P.sig))
 

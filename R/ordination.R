@@ -404,7 +404,7 @@ yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('', 'CK'
     vegan::adonis2(spe ~ trt, method = "bray", permutations = 999) -> Adonis   # 检验群落组间差异显著性(R & p)
     vegan::betadisper(spe.dist.bray, group = trt) -> dispersion;                # plot(dispersion, hull = F, ellipse = F)
     vegan::permutest(dispersion); Adonis$R2[1] -> RR; Adonis$`Pr(>F)`[1] -> P   # 检验组内齐性（PERMANOVA需满足组内齐性）
-    c(RR, P) %>% map(~ifelse(round(.x, 2) < 0.01, "~`<`~0.01", paste0("~`=`~", round(.x, 2)))) -> RR
+    c(RR, P) %>% map(~ifelse(.x < 0.01, "~`<`~0.01", paste0("~`=`~", formatC(.x, format = "f", digits = 2)))) -> RR
     paste0("R^2", RR[1], "~~italic(p)", RR[2]) -> rr.txt
 
    # pairwise Adonis: adonis2事后检验，两两组间差异
@@ -435,7 +435,7 @@ yy_anova_cca_summary <- function(model.ord){
 
   # Permutation test
   vegan::RsquareAdj(model.ord)$r.squared -> RR; vegan::anova.cca(model.ord)$`Pr(>F)`[1] -> P
-  c(RR, P) %>% map(~ifelse(round(.x, 2) < 0.01, "~`<`~0.01", paste0("~`=`~", round(.x, 2)))) -> cca.RRP
+  c(RR, P) %>% map(~ifelse(.x < 0.01, "~`<`~0.01", paste0("~`=`~", formatC(.x, format = "f", digits = 2)))) -> cca.RRP
   paste0("R^2", cca.RRP[1], "~~italic(p)", cca.RRP[2]) -> rr.txt
 
   # unique contribution of each variable after accounting for other variables
@@ -683,7 +683,7 @@ y_nmds_plot <- function(spe, trt, env = NULL, show.p = 0.05, show.p.pairs = '', 
 
     yy_ord_plot(point.df, arrow.df, eig = NULL, rr.txt = adonis.txt$rr.txt, xylim = xylim, lab.xy = 'NMDS', ...) +
       geom_text(data = adonis.txt[[2]], aes(x = x, y = y, label = txt), size = 2.5, vjust = "bottom", hjust = "left") +
-      annotate('text', x = Inf, y = -Inf, label = paste0('Stress = ', round(NMDS$stress, 2)), size = 3, vjust = -1, hjust = "right") %>%
+      annotate('text', x = Inf, y = -Inf, label = paste0('Stress = ', formatC(NMDS$stress, format = "f", digits = 2)), size = 3, vjust = -1, hjust = "right") %>%
     return()
     }
 
