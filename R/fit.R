@@ -21,61 +21,83 @@ y_descdist <- function(x, discrete = FALSE){
   fitdistrplus::descdist(x, discrete = discrete, boot = 999, method = "sample", graph = TRUE)
 }
 
-
-
-#' @title Summarise a fitted model and draw a coefficient plot
-#' @description Summarises fixed effects, variance explained and an optional
-#' random-forest overlay for supported fitted models. Supports lm, glm, lmer,
-#' glmer, glmmTMB and brmsfit models. Use models fitted with lmerTest::lmer()
-#' to retain mixed-model p-values.
-#' For `brmsfit` models, `p` is 0 when the 95% interval excludes zero and 1
-#' otherwise.
+#' @title Detect and optionally process outliers
+#' @description Flags observations outside the interval defined by the first
+#' and third quartiles plus `multiplier` times the interquartile range.
 #'
-#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
-#' model object.
-#' @param fig.name Optional data frame: input labels in column 1 and display
-#' labels in column 2.
-#' @param show.random.forest Whether to overlay random-forest variable
-#' importance. Requires `rfPermute` and `randomForest`.
-#' @param rr.inc Numeric controls for label spacing.
-#' @param output Output mode; see the function description.
-#' @param diagnostics Whether to draw model residual diagnostics.
-#' @return A ggplot object or a list containing data and plots.
-#'
-#' @examples
-#' fit <- lm(mpg ~ wt + hp, data = mtcars)
-#' y_fit_summary(fit, output = "all", diagnostics = FALSE)
+#' @param x Numeric vector.
+#' @param multiplier Numeric multiplier for the interquartile range.
+#' @param action `"flag"` returns a logical vector identifying outliers,
+#' `"na"` replaces outliers with `NA`, and `"winsorize"` replaces outliers with
+#' the nearest boundary.
+#' @return A logical vector for `"flag"`, otherwise a numeric vector with the
+#' same length as `x`.
 #'
 #' @family fitting
 #' @export
 #'
 
-y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE,
-                          rr.inc = c(.08, 0), output = 'p', diagnostics = TRUE){
+y_is_outlier <- function(x, multiplier = 3, action = c("flag", "na", "winsorize")){
 
-    if(isTRUE(diagnostics)){yy_check_pkg("DHARMa")}
-    if(show.random.forest){yy_check_random_forest_dependencies()}
+  if (sum(!is.na(x)) < 3) return(if(action[1] == "flag") rep(FALSE, length(x)) else x)
+
+  q <- quantile(x, probs = c(0.25, 0.75), na.rm = TRUE); iqr <- q[2] - q[1]
+  if (iqr == 0) return(if(action[1] == "flag") rep(FALSE, length(x)) else x)
+
+  lower <- q[1] - multiplier * iqr; upper <- q[2] + multiplier * iqr
+  outlier <- !is.na(x) & (x < lower | x > upper)
+  if (action[1] == "flag") return(outlier)
+  if (action[1] == "na") {x[outlier] <- NA; return(x)}
+  if (action[1] == 'winsorize') {x[outlier & x < lower] <- lower; x[outlier & x > upper] <- upper; return(x)}
+}
+
+
+#' @title Summarise a fitted model
+#' @description Extracts model data, response and fixed-effect predictor names,
+#' fixed-effect coefficients, and variance explained. Supports `lm`, `glm`,
+#' `lmer`, `glmer`, `glmmTMB` and `brmsfit` models. Use models fitted with
+#' `lmerTest::lmer()` to retain mixed-model p-values.
+#'
+#' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
+#' model object.
+#' @return A list containing the model data (`df`), response name (`name_y`),
+#' fixed-effect predictor names (`name_x`), coefficient table (`Est.txt`) and
+#' formatted R-squared values (`rr.txt`).
+#'
+#' @examples
+#' fit <- lm(mpg ~ wt + hp, data = mtcars)
+#' y_fit_summary(fit)$Est.txt
+#'
+#' @family fitting
+#' @export
+#'
+
+y_fit_summary <- function(fit){
+
+    insight::get_data(fit) -> df
+    insight::find_response(fit)[1] -> name_y
+    insight::find_predictors(fit, effects = "fixed", flatten = TRUE) -> name_x
 
     if(inherits(fit, 'brmsfit')){
         brms::fixef(fit) %>% data.frame() %>% rownames_to_column("x") %>%
-          rename_with(~ c("x", "Estimate", "std.Error", "Q2.5", "Q97.5")) %>% .[-1,] %>%
-          mutate(p = ifelse(Q2.5 <= 0 & Q97.5 >= 0, 1, 0)) -> Est.txt
-    } else{ if(inherits(fit, 'glmmTMB')){
-      summary(fit)$coefficients$cond -> coefficients
-    } else { if(inherits(fit, 'lmerMod')){
-      summary(lmerTest::as_lmerModLmerTest(fit))$coefficients -> coefficients
-    } else{summary(fit)$coefficients -> coefficients}}
+          rename_with(~ c("x", "Estimate", "std.Error", "Q2.5", "Q97.5")) %>%
+          mutate(p = ifelse(Q2.5 <= 0 & Q97.5 >= 0, 1, 0)) -> Est.txt } else {
+
+    if(inherits(fit, 'glmmTMB')){
+      summary(fit)$coefficients$cond -> coefficients} else {
+      if(inherits(fit, 'lmerMod')){ summary(lmerTest::as_lmerModLmerTest(fit))$coefficients -> coefficients
+      } else {summary(fit)$coefficients -> coefficients} }
       coefficients %>% data.frame() %>% rownames_to_column("x") -> Est.txt
       names(Est.txt)[grepl("rror", names(Est.txt))] <- "std.Error"; names(Est.txt)[grepl("^Pr", names(Est.txt))] <- "p";
-      Est.txt[-1,] %>% mutate(Q2.5 = Estimate - 1.96*std.Error, Q97.5 = Estimate + 1.96*std.Error) -> Est.txt
-    }
-    insight::get_data(fit) -> df
+      Est.txt %>% mutate(Q2.5 = Estimate - 1.96*std.Error, Q97.5 = Estimate + 1.96*std.Error) -> Est.txt }
 
-  # p_value
+    # p_value
     df %>% select(where(~ !is.numeric(.))) %>% names() -> x.name.sub
     Est.txt %>% mutate(x = gsub(paste0(x.name.sub, collapse = "|"), "", x)) -> Est.txt
-    Est.txt %>% mutate(p.sig = cut(p, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  ")),
+    Est.txt <- Est.txt[Est.txt$x != "(Intercept)", , drop = FALSE]; rownames(Est.txt) <- NULL
+    if("p" %in% names(Est.txt)) {Est.txt %>% mutate(p.sig = cut(p, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  ")),
       p.txt = ifelse(p < .01, "~`<`~0.01", paste0("~`=`~", round(p, 2))) %>% paste0("italic(p)", .)) -> Est.txt
+      } else { Est.txt %>% mutate(p.sig = NA, p.txt = NA) -> Est.txt }
 
     # RR
     performance::r2(fit) %>% unlist() -> RR; if(any(is.na(RR[1]))){MuMIn::r.squaredGLMM(fit)[2] -> RR[1]};
@@ -83,37 +105,101 @@ y_fit_summary <- function(fit, fig.name = NULL, show.random.forest = FALSE,
     if(inherits(fit, 'lm')|length(RR) == 1){paste0("R^2", RR[[1]]) -> rr.txt} else{
       rbind(paste0("R[m]^2", RR[[2]]), paste0("R[c]^2", RR[[1]])) -> rr.txt}; data.frame(rr.txt = rr.txt) -> rr.txt
 
-    # 检测模型（左黑点应落于红线，右黑线不水平则遗漏非线性项）
-    if(diagnostics){DHARMa::simulateResiduals(fittedModel = fit, n = 300) %>% plot()}
-
-    # plot the Estimate
-      Est.txt %>% mutate(p.color = ifelse(p < .05, "red", "grey58")) -> df.p
-      1.1*nrow(Est.txt) - rr.inc[1]*c(0:(nrow(rr.txt)- 1)+rr.inc[2])*(nrow(Est.txt)) -> RR.position
-
-      max(df.p$Q97.5) + .1*(max(df.p$Q97.5) - min(df.p$Q2.5)) -> max.x; ifelse(max.x < .1, .1, max.x) -> max.x
-      min(df.p$Q2.5) - .35*(max(df.p$Q97.5) - min(df.p$Q2.5)) -> min.x; ifelse(min.x > .1, -.1, min.x) -> min.x
-      if(!is.null(fig.name)){fig.name[match(df.p$x, fig.name[,1]), 2] -> df.p$x}; factor(df.p$x, levels = rev(df.p$x)) -> df.p$x
-
-      ggplot(df.p, aes(y = x, x = Estimate)) +
-        geom_vline(xintercept = 0, linetype = "dotted", linewidth = .5) +
-        geom_pointrange(aes(xmin = Q2.5, xmax = Q97.5), size = .5, color = df.p$p.color, pch = 15) +
-        annotate("text", x = min.x, y = RR.position, hjust = "left", parse = TRUE,  size = 2.8, label = rr.txt$rr.txt) +
-        theme_y() + theme(axis.text.y = element_text(size = 9)) + xlim(min.x, max.x) + labs(x = "Effect size (Estimate)", y = "") +
-        scale_y_discrete(expand = expansion(mult = c(.2, .2))) -> fit.plot
-
-   # show RF in plot
-   if(show.random.forest){
-    y_random_forest_plot(y = names(df)[[1]], x = Est.txt$x, df = df, sort = FALSE, output = 'all') -> RF.res
-    RF.res$RF.result %>% select(x = name_x, X.IncMSE) %>% merge(df.p, ., by = "x", sort = F, all.x = T) %>%
-    mutate(X.IncMSE2 = X.IncMSE/max(X.IncMSE)*max.x) -> df.p.RF
-    fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(x) -.4, ymax = as.numeric(x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
-    annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F,  size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
-    }
-
- if(grepl('p', output)){fit.plot %>% return()} else{
-   list('df' = df, "Est.txt" = Est.txt, "rr.txt" = rr.txt, "plot" = fit.plot) %>% return()}
+   list('df' = df, "name_y" = name_y, "name_x" = name_x, "Est.txt" = Est.txt, "rr.txt" = rr.txt)
  }
 
+
+#' @title Plot fitted-model coefficients
+#' @description Draws fixed-effect estimates and confidence intervals. Residual
+#' diagnostics and random-forest variable importance can be added.
+#'
+#' @param fit A fitted model accepted by [y_fit_summary()].
+#' @param fig.name Optional data frame: input labels in column 1 and display
+#' labels in column 2.
+#' @param show.random.forest Whether to overlay random-forest variable
+#' importance. Requires `rfPermute` and `randomForest`.
+#' @param rr.inc Numeric controls for label spacing.
+#' @param diagnostics Whether to draw model residual diagnostics.
+#' @return A ggplot object.
+#'
+#' @family fitting
+#' @export
+#'
+
+y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE,
+                          rr.inc = c(.08, 0), diagnostics = TRUE){
+
+    if(diagnostics){yy_check_pkg("DHARMa")}
+    if(show.random.forest){yy_check_random_forest_dependencies()}
+    if(isTRUE(diagnostics)){DHARMa::simulateResiduals(fittedModel = fit, n = 300) %>% plot()}
+    # 检测模型（左黑点应落于红线，右黑线不水平则遗漏非线性项
+
+    y_fit_summary(fit) -> fit.res
+    fit.res$df -> df; fit.res$Est.txt -> Est.txt; fit.res$rr.txt -> rr.txt
+
+    Est.txt %>% mutate(p.color = ifelse(p < .05, "red", "grey58")) -> df.p
+    1.1*nrow(Est.txt) - rr.inc[1]*c(0:(nrow(rr.txt)- 1)+rr.inc[2])*(nrow(Est.txt)) -> RR.position
+
+    max(df.p$Q97.5) + .1*(max(df.p$Q97.5) - min(df.p$Q2.5)) -> max.x; ifelse(max.x < .1, .1, max.x) -> max.x
+    min(df.p$Q2.5) - .35*(max(df.p$Q97.5) - min(df.p$Q2.5)) -> min.x; ifelse(min.x > .1, -.1, min.x) -> min.x
+    if(!is.null(fig.name)){fig.name[match(df.p$x, fig.name[,1]), 2] -> df.p$x}; factor(df.p$x, levels = rev(df.p$x)) -> df.p$x
+
+    ggplot(df.p, aes(y = x, x = Estimate)) +
+      geom_vline(xintercept = 0, linetype = "dotted", linewidth = .5) +
+      geom_pointrange(aes(xmin = Q2.5, xmax = Q97.5), size = .5, color = df.p$p.color, pch = 15) +
+      annotate("text", x = min.x, y = RR.position, hjust = "left", parse = TRUE, size = 2.8, label = rr.txt$rr.txt) +
+      theme_y() + theme(axis.text.y = element_text(size = 9)) + xlim(min.x, max.x) + labs(x = "Effect size (Estimate)", y = "") +
+      scale_y_discrete(expand = expansion(mult = c(.2, .2))) -> fit.plot
+
+    if(show.random.forest){
+      y_random_forest_plot(y = fit.res$name_y, x = fit.res$name_x, df = df, sort = FALSE, output = 'all') -> RF.res
+      RF.res$RF.result %>% select(x = name_x, X.IncMSE) %>% merge(df.p, ., by = "x", sort = F, all.x = T) %>%
+        mutate(X.IncMSE2 = X.IncMSE/max(X.IncMSE)*max.x) -> df.p.RF
+      fit.plot + geom_rect(data = df.p.RF, aes(ymin = as.numeric(x) -.4, ymax = as.numeric(x) +.4, xmin = min.x, xmax = X.IncMSE2), fill = "grey", alpha = .2) +
+        annotate('text', x = min.x, y = 0, hjust = "left", vjust = -.8, parse = F, size = 2.5, label = paste0('In.MSE (%): 0 - ', round(max(df.p.RF$X.IncMSE), 1))) -> fit.plot
+    }
+    return(fit.plot)
+}
+
+
+#' @title Build a wide fitted-model table
+#' @description Returns one table row for a single fitted model. Each
+#' coefficient or categorical group forms a column, and R-squared is included
+#' as the final column.
+#'
+#' @param fit A single fitted model accepted by [y_fit_summary()]. A model with
+#' several predictors is supported when `show = "est"`. For `show = "mse"`,
+#' the model must contain exactly one categorical predictor, such as `y ~ x`.
+#' @param dig Number of decimal places.
+#' @param show `"est.p"` displays coefficient estimates with significance marks;
+#' `"mse.p"` displays observed group means and standard errors.
+#' @return A one-row wide data frame.
+#'
+#' @family fitting
+#' @export
+#'
+
+y_fit_msetable <- function(fit, dig = 3, show = c("est", "mse")){
+
+  fit %>% y_fit_summary() -> fit_res; fit_res$name_x[1] -> name_x
+  is_categorical <- length(fit_res$name_x) == 1 && (is.factor(fit_res$df[[name_x]]) || is.character(fit_res$df[[name_x]]))
+
+  if(is_categorical){
+    data.frame(y = fit_res$df[[fit_res$name_y]], x = fit_res$df[[name_x]]) %>%
+      group_by(x) %>% reframe(mean = mean(y, na.rm = TRUE), se = sd(y, na.rm = TRUE)/sqrt(sum(!is.na(y)))) -> mse }
+
+  if(show[1] == "mse"){
+     data.frame(x = as.character(mse$x), value = paste0(round(mse$mean, dig), " ± ", round(mse$se, dig))) -> df_table
+  } else {
+    as.character(fit_res$Est.txt$p.sig) -> sig; sig[is.na(sig)] <- ""
+    paste0(round(fit_res$Est.txt$Estimate, dig), sig) %>% data.frame(x = fit_res$Est.txt$x, value = .) -> est
+    if(!is_categorical){est -> df_table} else{
+      data.frame(x = as.character(mse$x), mean = mse$mean, se = mse$se) %>% dplyr::left_join(est, by = "x") %>%
+      mutate(value = ifelse(is.na(value), paste0(round(mean, dig), " ± ", round(se, dig)), value)) -> df_table } }
+
+  as.data.frame(as.list(setNames(df_table$value, df_table$x)), check.names = FALSE) %>%
+    mutate(R2 = paste0(fit_res$rr.txt[[1]], collapse = " ")) %>% return()
+}
 
 
 #' @title Generate fitted values and confidence intervals
@@ -227,8 +313,7 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
   stats::update(stats::formula(fit), stats::as.formula(paste0('. ~ . ', str))) -> new.formula
   reformulas::nobars(new.formula) -> fixed.formula; stats::terms(fixed.formula) -> fixed.terms
   attr(fixed.terms, 'term.labels') -> terms.x
-  vapply(terms.x, \(term){min(c(match(all.vars(stats::as.formula(paste0('~', term))), x.order), Inf), na.rm = TRUE)},
-    numeric(1)) -> term.rank
+  vapply(terms.x, \(term){min(c(match(all.vars(stats::as.formula(paste0('~', term))), x.order), Inf), na.rm = TRUE)}, numeric(1)) -> term.rank
   order(grepl(':', terms.x, fixed = TRUE), term.rank) -> terms.id
   terms.x[terms.id] %>% paste0(collapse = ' + ') -> fixed.rhs
   if(length(terms.x) == 0){'1' -> fixed.rhs}; if(attr(fixed.terms, 'intercept') == 0){paste0('0 + ', fixed.rhs) -> fixed.rhs}

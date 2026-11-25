@@ -81,19 +81,19 @@ provide the same plotting defaults used by the other helpers.
 ```r
 fit <- lm(mpg ~ wt + hp, data = mtcars)
 
-result <- y_fit_summary(
-  fit,
-  output = "all",
-  diagnostics = FALSE
-)
+result <- y_fit_summary(fit)
+result$Est.txt
 
-result$plot
+y_fit_estplot(fit, diagnostics = FALSE)
+y_fit_msetable(fit)
 ```
 
-`y_fit_classplot()`, `y_fit_linesplot()` and the other fitted-plot helpers turn
-residual diagnostics off by default when they call `y_fit_summary()` internally.
-Call `y_fit_summary()` directly with `diagnostics = TRUE` when diagnostics are
-required.
+`y_fit_summary()` returns model data, variable names, coefficients and
+R-squared values. Use `y_fit_estplot()` for coefficient plots and
+`y_fit_msetable()` for a one-row wide table from a single fitted model.
+
+Use `y_is_outlier()` with `action = "flag"` to identify outliers, or
+`action = "na"` and `action = "winsorize"` to process them.
 
 The optional random-forest overlay requires two additional packages:
 

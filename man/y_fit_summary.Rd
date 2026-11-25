@@ -2,56 +2,40 @@
 % Please edit documentation in R/fit.R
 \name{y_fit_summary}
 \alias{y_fit_summary}
-\title{Summarise a fitted model and draw a coefficient plot}
+\title{Summarise a fitted model}
 \usage{
-y_fit_summary(
-  fit,
-  fig.name = NULL,
-  show.random.forest = FALSE,
-  rr.inc = c(0.08, 0),
-  output = "p",
-  diagnostics = TRUE
-)
+y_fit_summary(fit)
 }
 \arguments{
 \item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit}
 model object.}
-
-\item{fig.name}{Optional data frame: input labels in column 1 and display
-labels in column 2.}
-
-\item{show.random.forest}{Whether to overlay random-forest variable
-importance. Requires \code{rfPermute} and \code{randomForest}.}
-
-\item{rr.inc}{Numeric controls for label spacing.}
-
-\item{output}{Output mode; see the function description.}
-
-\item{diagnostics}{Whether to draw model residual diagnostics.}
 }
 \value{
-A ggplot object or a list containing data and plots.
+A list containing the model data (\code{df}), response name (\code{name_y}),
+fixed-effect predictor names (\code{name_x}), coefficient table (\code{Est.txt}) and
+formatted R-squared values (\code{rr.txt}).
 }
 \description{
-Summarises fixed effects, variance explained and an optional
-random-forest overlay for supported fitted models. Supports lm, glm, lmer,
-glmer, glmmTMB and brmsfit models. Use models fitted with lmerTest::lmer()
-to retain mixed-model p-values.
-For \code{brmsfit} models, \code{p} is 0 when the 95\% interval excludes zero and 1
-otherwise.
+Extracts model data, response and fixed-effect predictor names,
+fixed-effect coefficients, and variance explained. Supports \code{lm}, \code{glm},
+\code{lmer}, \code{glmer}, \code{glmmTMB} and \code{brmsfit} models. Use models fitted with
+\code{lmerTest::lmer()} to retain mixed-model p-values.
 }
 \examples{
 fit <- lm(mpg ~ wt + hp, data = mtcars)
-y_fit_summary(fit, output = "all", diagnostics = FALSE)
+y_fit_summary(fit)$Est.txt
 
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
+\code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
 \code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
+\code{\link[=y_is_outlier]{y_is_outlier()}},
 \code{\link[=y_random_forest_plot]{y_random_forest_plot()}}
 }
 \concept{fitting}

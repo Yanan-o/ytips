@@ -87,15 +87,17 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
      # only one character x permits in fit; group is a df(x, g) or 'name' in fit; using to coloring point
      yy_check_pkg("car"); if(isTRUE(pairwise)){yy_check_pkg("rcompanion")}
 
-     fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res; fit.res$rr.txt -> rr.txt; fit.res$df %>% arrange(across(2)) -> df.0
-     if(!is.null(group)){if(is.character(group)){df.0[[group]] -> df.0$'group'} else{group[match(df.0[[2]], group[,1]), 2] -> df.0$'group'}}
-     rename(df.0,'y' = 1, 'x' = 2) -> df; group_by(df, x) %>% reframe(max.y = max(y), mean.y = mean(y)) -> df_m
+     fit %>% y_fit_summary() -> fit.res;
+     fit.res$rr.txt -> rr.txt; fit.res$name_x[1] -> name_x; fit.res$df %>% arrange(across(all_of(name_x))) -> df.0
+
+     if(!is.null(group)){if(is.character(group)){df.0[[group]] -> df.0$'group'} else{group[match(df.0[[name_x]], group[,1]), 2] -> df.0$'group'}}
+     rename(df.0, y = all_of(fit.res$name_y), x = all_of(name_x)) -> df; group_by(df, x) %>% reframe(max.y = max(y), mean.y = mean(y)) -> df_m
      if(is.null(ylim)){max(df$y) + .3*(max(df$y) - min(df$y)) -> ymax; min(df$y) -> ymin} else{ylim[1] -> ymin; ylim[2] -> ymax}
      if(!isFALSE(hline)){if(is.null(ylim)){min(df$y) - .03*(max(df$y) - min(df$y)) -> hline.value; min(ymin, hline.value) -> ymin} else{ymin + .01*(ymax - ymin) -> hline.value}} else{NULL -> hline.value}
 
      # p.sig & model P
       if(p.adjust == 'default'){ifelse(pairwise, 'tukey', 'dunnett') -> p.adjust}
-      eval(parse(text = paste0('emmeans::emmeans(fit, ~', names(df.0)[2], ')') )) -> emm
+      eval(parse(text = paste0('emmeans::emmeans(fit, ~', name_x, ')') )) -> emm
 
       if(pairwise){
         emmeans::contrast(emm,  method = "pairwise", adjust = p.adjust) %>% as.data.frame() %>%
@@ -116,7 +118,8 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
           if(nrow(Est.txt) > 0){for(j in 1:nrow(Est.txt)){Est.txt[, "yposition"][j] = max(df$y) + j*(ymax - max(df$y))/nrow(Est.txt)}}
         rr.txt %>% mutate(xposition = 0.88*length(unique(df$x)), yposition = ymax-rr.inc[1]*c(1:(nrow(.))+rr.inc[2])*(ymax-ymin)) -> rr.txt }
 
-    y_classplot(df.0, plot = plot, ...) +
+    c(fit.res$name_y, name_x, if("group" %in% names(df.0)){"group"}) -> plot_vars
+    y_classplot(df.0[, plot_vars, drop = FALSE], plot = plot, ...) +
       geom_text(data = rr.txt, aes(x = xposition, y = yposition), label = rr.txt[, "rr.txt"], hjust = "left", parse = TRUE, size = 2.5) -> p
 
     if(pairwise){p + geom_text(data = Est.txt, aes(x = x, y = yposition, label = p.sig), hjust = .5, size = 3) -> p } else {
@@ -155,25 +158,32 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
 
 y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size = 2, line.size = 1, point.alpha = .3, line.alpha = 1, ylim = NULL,
                             show.p = 0.05, show.p.lty = 2, show.se = FALSE, show.smooth = FALSE, rr.loc = NULL, rr.inc = c(.08, 0)){
-   # fit for one line is OK; fits are same to y_fit_summary, but only one x permits; show.p.lty = NA: lines p>.05 not show
-   # lines.list: a list includes multiple fit and each fit can be crafted as a line (name of sub-list is the line_name)
+   # fit for one line is OK; fits are same to y_fit_summary, but only one x permits;
+   # fit.list: a list includes multiple fit and each fit can be crafted as a line (name of sub-list is the line_name)
 
     if(class(fit.list)[1] == 'list'){
-      fit.list %>% map(~{y_fit_summary(.x, output = 'all', diagnostics = FALSE)}) -> fit.res;
-      fit.res %>% map('df') %>% bind_rows(.id = 'line') -> df_fit; names(df_fit)[-1] -> name_vars;
-      fit.list %>% map(~{.x %>% y_fit_predict(newdata = 'grid')}) %>% bind_rows(.id = 'line') -> df_pre
-        map(fit.res, "Est.txt") %>% map(~data.frame(P = .x$p, P.txt = .x$p.txt)) %>% bind_rows(.id = 'line') -> P
-        map(fit.res, "rr.txt") %>% map(~data.frame(txt = paste0(.x[,1], collapse = '~~') )) %>% bind_rows() %>%
-        cbind(., P) %>% mutate(txt = paste0(txt, '~~', P.txt)) -> df_txt0
-      } else{
-      fit.list %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res;
-      fit.res$df %>% mutate(line = 'line') -> df_fit; names(fit.res$df) -> name_vars;
-      fit.list %>% y_fit_predict(newdata = 'grid') %>% mutate(line = 'line') -> df_pre
+      fit.list %>% map(y_fit_summary) -> fit.res; c(fit.res[[1]]$name_y, fit.res[[1]]$name_x[1]) -> name_vars
+
+      purrr::map2(fit.res, fit.list, ~{fit_res <- .x;
+        fit_res$df %>% select(y = all_of(fit_res$name_y), x = all_of(fit_res$name_x[1]))}) %>% bind_rows(.id = 'line') -> df_fit
+      purrr::map2(fit.list, fit.res, ~{name_x <- .y$name_x[1];
+        y_fit_predict(.x, newdata = 'grid') %>% select(all_of(c(name_x, 'ypre', 'ypre.Q2.5', 'ypre.Q97.5'))) %>%
+        rename(x = all_of(name_x))}) %>% bind_rows(.id = 'line') -> df_pre
+
+      map(fit.res, "Est.txt") %>% imap(~data.frame(line = .y, P = .x$p, P.txt = .x$p.txt)) %>% bind_rows() -> P
+      map(fit.res, "rr.txt") %>% imap(~data.frame(line = .y, txt = paste0(.x[,1], collapse = '~~'))) %>%
+        bind_rows() %>% dplyr::left_join(P, by = 'line') %>% mutate(txt = paste0(txt, '~~', P.txt)) -> df_txt0
+    } else{
+      fit.list %>% y_fit_summary() -> fit.res; c(fit.res$name_y, fit.res$name_x[1]) -> name_vars
+
+      fit.res$df %>% select(y = all_of(name_vars[1]), x = all_of(name_vars[2])) %>% mutate(line = 'line') -> df_fit
+      y_fit_predict(fit.list, newdata = 'grid') %>% select(all_of(c(name_vars[2], 'ypre', 'ypre.Q2.5', 'ypre.Q97.5'))) %>%
+        rename(x = all_of(name_vars[2])) %>% mutate(line = 'line') -> df_pre
       data.frame(txt = rbind(paste0(fit.res$rr.txt[,1], collapse = '~~'), fit.res$Est.txt$p.txt), P = fit.res$Est.txt$p) %>% mutate(line = "line") -> df_txt0 }
 
     # plot
-    df_fit %>% rename('y' = all_of(name_vars[1]), 'x' = all_of(name_vars[2])) %>% mutate(line = factor(line, levels = unique(line))) -> df_fit;
-    df_pre %>% rename('x' = all_of(name_vars[2])) %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
+    df_fit %>% mutate(line = factor(line, levels = unique(line))) -> df_fit
+    df_pre %>% mutate(line = factor(line, levels = unique(line))) -> df_pre
     if(is.null(fig.name)){name_vars -> fig_name} else{fig.name[match(name_vars, fig.name[,1]), 2] -> fig_name}
     if(is.null(ylim)){.9*min(df_fit$y, df_pre$ypre.Q2.5) -> ymin; 1.1*max(df_fit$y, df_pre$ypre.Q97.5) -> ymax} else{ylim[1] -> ymin; ylim[2] -> ymax}
     if(is.null(cols)){color_y(n = length(fit.list)) -> cols}; if(is.null(rr.loc)){c(min(df_pre$x), ymax) -> rr.loc}
@@ -216,8 +226,9 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
 y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show.p = 0.05, lty.p = 2,
                           show.se = FALSE, txt = NULL, txt.cols = '#FF0000', txt.size = 8, txt.position = NULL){
 
-    fit %>% y_fit_predict(newdata = 'grid') %>% rename('x' = 1) -> df_pre
-    fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) %>% .$Est.txt %>% select(Estimate, p, p.sig) -> txt0
+    fit %>% y_fit_summary() -> fit.res
+    fit %>% y_fit_predict(newdata = 'grid') %>% rename(x = all_of(fit.res$name_x[1])) -> df_pre
+    fit.res$Est.txt %>% select(Estimate, p, p.sig) -> txt0
 
     if(is.null(txt)){txt0$p.sig -> txt} else{ txt -> txt}
     if(is.null(txt.position)){c(max(df_pre$x), y = ifelse(txt0$Estimate > 0, max(df_pre$ypre), min(df_pre$ypre))) -> txt.position}
@@ -247,11 +258,11 @@ y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show
 y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("steelblue2", "white", "#FF1493")){
     # fits are same to y_fit_summary, but only two x permits
 
-    fit %>% y_fit_summary(output = 'all', diagnostics = FALSE) -> fit.res; fit.res$df -> df
-    names(df)[1] -> y; names(df)[2] -> x1;  names(df)[3] -> x2
-    if(is.null(fig.name)){names(df) -> fig_name} else{fig.name[match(names(df), fig.name[,1]), 2] -> fig_name}
+    fit %>% y_fit_summary() -> fit.res; fit.res$df -> df
+    fit.res$name_y -> y; fit.res$name_x[1] -> x1; fit.res$name_x[2] -> x2
+    if(is.null(fig.name)){c(y, x1, x2) -> fig_name} else{fig.name[match(c(y, x1, x2), fig.name[,1]), 2] -> fig_name}
 
-    y_fit_predict(fit, newdata = 'grid') %>% rename('x1' = 1, 'x2' = 2) -> df_pre.xx
+    y_fit_predict(fit, newdata = 'grid') %>% rename(x1 = all_of(x1), x2 = all_of(x2)) -> df_pre.xx
 
     ggplot(df_pre.xx, aes(x = x1, y = x2)) + geom_tile(aes(fill = ypre)) +
       geom_contour(aes(z = ypre), color = "white", bins = 30, linewidth = .1) +
@@ -264,9 +275,9 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
     expand.grid(x1 = df[[x1]], x2 = median(df[[x2]])) %>% rename_with(~c(x1, x2)) -> new.x1
     expand.grid(x1 = median(df[[x1]]), x2 = df[[x2]]) %>% rename_with(~c(x1, x2)) -> new.x2
 
-    y_fit_predict(fit) %>% rename('y' = 1, 'x1' = 2, 'x2' = 3) -> df_pre
-    y_fit_predict(fit, newdata = new.x1) %>% rename('x1' = 1, 'x2' = 2) -> df_pre.x1
-    y_fit_predict(fit, newdata = new.x2) %>% rename('x1' = 1, 'x2' = 2) -> df_pre.x2
+    y_fit_predict(fit) %>% rename(y = all_of(y), x1 = all_of(x1), x2 = all_of(x2)) -> df_pre
+    y_fit_predict(fit, newdata = new.x1) %>% rename(x1 = all_of(x1), x2 = all_of(x2)) -> df_pre.x1
+    y_fit_predict(fit, newdata = new.x2) %>% rename(x1 = all_of(x1), x2 = all_of(x2)) -> df_pre.x2
 
     ggplot() + geom_point(data = df_pre, aes(x = x1, y = y), alpha = 0.6) + labs(x = fig_name[2], y = fig_name[1], title = 'x2 = median') +
       geom_line(data = df_pre.x1, aes(x = x1, y = ypre), color = "red", linewidth = 1) + theme_classic() -> p1
@@ -301,8 +312,8 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 
 y_fit_partial_plot <- function(fit, x.fixed = "", ...){
 
-  stats::model.frame(fit) %>% as_tibble() -> df
-  all.vars(stats::formula(fit, fixed.only = TRUE))[1] -> y
+  fit %>% y_fit_summary() -> fit.res
+  fit.res$df -> df; fit.res$name_y -> y
   stats::update(fit, formula. = stats::as.formula(paste0('. ~ . - ', x.fixed))) -> fit1
   stats::update(fit1, formula. = stats::as.formula(paste0(x.fixed, ' ~ .'))) -> fit2
 
@@ -336,9 +347,11 @@ y_fit_decomposition_plot <- function(fit, y1 = "", y2 = "", name.yy = c(y1, y2))
 
   var_pred <- function(model){
     if(inherits(model, "merMod")){stats::predict(model, re.form = NA) -> p} else{stats::predict(model) -> p}
-    var(p)
-  }
-  if(inherits(fit, "merMod")){getData(fit) -> df} else{eval(fit$call$data, environment(stats::formula(fit))) -> df}
+    var(p) }
+
+  fit %>% y_fit_summary() -> fit.res
+  tryCatch(eval(getCall(fit)$data, environment(stats::formula(fit))), error = function(e) NULL) -> df
+  if(!is.data.frame(df)){fit.res$df -> df}
   stats::update(fit, formula. = stats::as.formula(paste0(y1, ' ~ .')), data = df) -> fit_y1
   stats::update(fit, formula. = stats::as.formula(paste0(y2, ' ~ .')), data = df) -> fit_y2
   var_total <- var_pred(fit) + if(inherits(fit, "merMod")){sum(as.data.frame(VarCorr(fit))$vcov)} else{stats::sigma(fit)^2}

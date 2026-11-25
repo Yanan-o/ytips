@@ -24,10 +24,13 @@ requested. output = "best_fit" returns only the selected model.
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
+\code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
+\code{\link[=y_is_outlier]{y_is_outlier()}},
 \code{\link[=y_random_forest_plot]{y_random_forest_plot()}}
 }
 \concept{fitting}

@@ -1,11 +1,34 @@
-test_that("y_fit_summary can suppress diagnostics", {
+test_that("y_fit_summary returns model information", {
   fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
 
-  expect_true("diagnostics" %in% names(formals(y_fit_summary)))
-  result <- y_fit_summary(fit, output = "all", diagnostics = FALSE)
+  expect_false("diagnostics" %in% names(formals(y_fit_summary)))
+  expect_false("output" %in% names(formals(y_fit_summary)))
+  result <- y_fit_summary(fit)
 
   expect_type(result, "list")
-  expect_s3_class(result$plot, "ggplot")
+  expect_named(result, c("df", "name_y", "name_x", "Est.txt", "rr.txt"))
+  expect_identical(result$name_y, "mpg")
+  expect_identical(result$name_x, c("wt", "hp"))
+  expect_equal(nrow(result$Est.txt), 2)
+  expect_s3_class(y_fit_estplot(fit, diagnostics = FALSE), "ggplot")
+})
+
+test_that("y_fit_summary does not depend on model-data column positions", {
+  df <- mtcars[, c("wt", "hp", "mpg")]
+  result <- y_fit_summary(stats::lm(mpg ~ wt + hp, data = df))
+
+  expect_identical(result$name_y, "mpg")
+  expect_identical(result$name_x, c("wt", "hp"))
+  expect_equal(nrow(result$Est.txt), 2)
+})
+
+test_that("y_fit_summary retains categorical and no-intercept coefficients", {
+  factor_result <- y_fit_summary(stats::lm(mpg ~ factor(cyl), data = mtcars))
+  no_intercept <- y_fit_summary(stats::lm(mpg ~ 0 + wt + hp, data = mtcars))
+
+  expect_true(any(grepl("factor\\(cyl\\)", factor_result$Est.txt$x)))
+  expect_equal(nrow(no_intercept$Est.txt), 2)
+  expect_false(any(no_intercept$Est.txt$x == "(Intercept)"))
 })
 
 test_that("y_fit_predict returns fitted values", {
@@ -55,10 +78,10 @@ test_that("automatic prediction grids preserve categorical levels", {
 
 test_that("fit helpers support generalized and mixed models", {
   glm_fit <- stats::glm(am ~ wt + hp, data = mtcars, family = stats::binomial)
-  glm_result <- y_fit_summary(glm_fit, output = "all", diagnostics = FALSE)
+  glm_result <- y_fit_summary(glm_fit)
   glm_pred <- y_fit_predict(glm_fit)
-  expect_s3_class(glm_result$plot, "ggplot")
   expect_true(all(glm_pred$ypre >= 0 & glm_pred$ypre <= 1))
+  expect_type(glm_result, "list")
 
   lmer_fit <- lmerTest::lmer(
     Reaction ~ Days + (1 | Subject),
@@ -93,14 +116,10 @@ test_that("fit helpers support glmmTMB models", {
     data = lme4::sleepstudy
   ))
 
-  summary_result <- y_fit_summary(
-    fit,
-    output = "all",
-    diagnostics = FALSE
-  )
+  summary_result <- y_fit_summary(fit)
   prediction <- y_fit_predict(fit, newdata = lme4::sleepstudy[1:5, ])
 
-  expect_s3_class(summary_result$plot, "ggplot")
+  expect_type(summary_result, "list")
   expect_equal(nrow(prediction), 5)
   expect_true(all(c("ypre", "ypre.Q2.5", "ypre.Q97.5") %in%
     names(prediction)))
@@ -137,13 +156,13 @@ test_that("y_fit_update orders fixed terms before random effects", {
 
 test_that("y_fit_summary supports plain lme4 models", {
   fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
-  result <- y_fit_summary(fit, output = "all", diagnostics = FALSE)
+  result <- y_fit_summary(fit)
 
   expect_true("p" %in% names(result$Est.txt))
   expect_type(result, "list")
 })
 
-test_that("y_fit_summary draws the random-forest overlay", {
+test_that("y_fit_estplot draws the random-forest overlay", {
   fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
   local_mocked_bindings(
     yy_check_random_forest_dependencies = function() TRUE,
@@ -156,15 +175,14 @@ test_that("y_fit_summary draws the random-forest overlay", {
     .package = "ytips"
   )
 
-  result <- y_fit_summary(
+  result <- y_fit_estplot(
     fit,
-    output = "all",
     diagnostics = FALSE,
     show.random.forest = TRUE
   )
 
-  expect_s3_class(result$plot, "ggplot")
-  expect_silent(ggplot2::ggplot_build(result$plot))
+  expect_s3_class(result, "ggplot")
+  expect_silent(ggplot2::ggplot_build(result))
 })
 
 test_that("y_fit_classplot accepts a grouping data frame", {
@@ -195,9 +213,8 @@ test_that("random-forest options report missing package installation commands", 
   fit <- stats::lm(mpg ~ wt + hp, data = mtcars)
 
   expect_error(
-    y_fit_summary(
+    y_fit_estplot(
       fit,
-      output = "all",
       diagnostics = TRUE,
       show.random.forest = TRUE
     ),

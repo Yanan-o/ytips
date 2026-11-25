@@ -176,9 +176,8 @@ test_that("public entry points fail early with installation instructions", {
     "car"
   )
   expect_error(
-    y_fit_summary(
+    y_fit_estplot(
       stats::lm(mpg ~ wt + hp, data = mtcars),
-      output = "all",
       diagnostics = TRUE
     ),
     "DHARMa"
