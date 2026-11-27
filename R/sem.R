@@ -1,5 +1,6 @@
 #' @title Select fixed-effect subsets for piecewiseSEM
-#' @description Selects fixed-effect subsets for piecewiseSEM.
+#' @description Fits predictor subsets and ranks them by AICc or p-value
+#' thresholds.
 #'
 #' @param fit A fitted `lm`, `lmer` or `glmer` model object.
 #' @param step Selection rule: `"aicc"`, `".1"`, or `".05"`.
@@ -46,11 +47,11 @@ yy_fit_step <- function(fit, step = "aicc", output = "all"){
 
 
 #' @title Build a piecewiseSEM formula from fitted models
-#' @description Builds a piecewiseSEM formula from fitted models.
+#' @description Builds a piecewiseSEM formula from one or more fitted models.
 #'
 #' @param fit A fitted `lmer` model, or a list whose first element is a fitted
 #' `lmer` model.
-#' @param sem.f Formula-building mode.
+#' @param sem.f Formula-building mode, such as a step or full model.
 #' @param sem.data Data used to fit the SEM.
 #' @param x.level1 Predictors in the first path level.
 #' @param x.level2 Predictors in the second path level.
@@ -265,7 +266,7 @@ y_psem_step <- function(psem.res, id = NULL, vars = NULL, step.n = NULL, step.p 
 
 #' @title Fit and bootstrap a piecewiseSEM model
 #' @description Fits a piecewiseSEM model with optional bootstrap confidence
-#' intervals.
+#' intervals; `nrep = 0` skips bootstrapping.
 #'
 #' @param sem.formula A formula or a list returned by [y_psem_formula()].
 #' @param sem.data Data used to fit the SEM.

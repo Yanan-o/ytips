@@ -9,7 +9,8 @@ y_fit_predict(fit, newdata = NULL, re_formula = NA)
 \arguments{
 \item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} model.}
 
-\item{newdata}{Model data, predictor values, or \code{"grid"} for a generated grid.}
+\item{newdata}{\code{NULL} uses model data; a data frame supplies predictors;
+\code{"grid"} generates predictor combinations.}
 
 \item{re_formula}{\code{NA} excludes random effects; \code{NULL} includes them.}
 }

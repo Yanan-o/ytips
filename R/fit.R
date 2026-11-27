@@ -1,5 +1,6 @@
 #' @title Describe the distribution of a numeric vector
-#' @description Draws distribution diagnostics.
+#' @description Draws a Shapiro-Wilk test, histogram, density, QQ plot and
+#' Cullen-Frey diagnostic.
 #'
 #' @param x Numeric vector of observed values.
 #' @param discrete Logical; whether `x` contains discrete counts.
@@ -52,12 +53,14 @@ y_is_outlier <- function(x, multiplier = 3, action = c("flag", "na", "winsorize"
 
 
 #' @title Summarise a fitted model
-#' @description Returns model data, fixed-effect estimates and R-squared values.
+#' @description Extracts model data, fixed-effect estimates and R-squared values
+#' from `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit` models.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
 #' model object.
 #' @return A list with `df`, `name_y`, `name_x`, `Est.txt`, numeric R-squared
-#' values in `rr`, and formatted labels in `rr.txt`.
+#' values in `rr`, and formatted labels in `rr.txt`. `rr` contains `R2` for
+#' ordinary models and `Rm`/`Rc` for mixed models.
 #'
 #' @examples
 #' fit <- lm(mpg ~ wt + hp, data = mtcars)
@@ -106,7 +109,8 @@ y_fit_summary <- function(fit){
 
 
 #' @title Plot fitted-model coefficients
-#' @description Plots fixed-effect estimates and confidence intervals.
+#' @description Plots fixed-effect estimates and confidence intervals, with
+#' optional residual diagnostics and random-forest variable importance.
 #'
 #' @param fit A fitted model accepted by [y_fit_summary()].
 #' @param fig.name Optional data frame: input labels in column 1 and display
@@ -157,9 +161,10 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 
 
 #' @title Build a wide fitted-model table
-#' @description Builds a one-row coefficient table for a fitted model.
+#' @description Builds a one-row coefficient table with an R-squared column.
 #'
-#' @param fit A fitted model accepted by [y_fit_summary()].
+#' @param fit A fitted model accepted by [y_fit_summary()]. `show = "mse"`
+#' requires one categorical predictor.
 #' @param digits Number of decimal places.
 #' @param show `"est"` displays coefficient estimates with significance marks;
 #' `"mse"` displays observed group means and standard errors.
@@ -201,7 +206,8 @@ y_fit_msetable <- function(fit, digits = 2, show = c("est", "mse")){
 #' @description Adds fitted values and 95% confidence intervals to model data.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit` model.
-#' @param newdata Model data, predictor values, or `"grid"` for a generated grid.
+#' @param newdata `NULL` uses model data; a data frame supplies predictors;
+#' `"grid"` generates predictor combinations.
 #' @param re_formula `NA` excludes random effects; `NULL` includes them.
 #' @return A data frame containing fitted values and intervals.
 #'
@@ -226,11 +232,12 @@ y_fit_predict <- function(fit, newdata = NULL, re_formula = NA){
 
 
 #' @title Update a model formula while preserving random effects
-#' @description Updates a model formula and keeps its random effects.
+#' @description Updates a formula, orders fixed-effect terms and keeps random
+#' effects.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer` or `glmmTMB` model.
 #' @param str Formula update text, such as `"+ x1 - x2"`.
-#' @param x.order Optional term order.
+#' @param x.order Optional fixed-effect term order.
 #' @return An updated fitted model.
 #'
 #' @family fitting
@@ -262,11 +269,13 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
 #' @title Rank fixed-effect model subsets
 #' @description Ranks fixed-effect model subsets with [MuMIn::dredge()].
 #'
-#' @param fit A fitted model accepted by [MuMIn::dredge()], preferably fitted
-#' with `na.action = na.fail`.
-#' @param rank Ranking criterion accepted by [MuMIn::dredge()].
+#' @param fit A fitted model accepted by [MuMIn::dredge()]. Use
+#' `na.action = na.fail`.
+#' @param rank Ranking criterion, such as `"AICc"`, `"AIC"` or `"BIC"`.
 #' @param top Number of ranked subsets, excluding the full model.
-#' @return A list with `best_fit` and a model table in `fit_rank`.
+#' @return A list with `best_fit` and `fit_rank`. `fit_rank` contains `rank`,
+#' `formula`, `R2` or `Rm`/`Rc`, `AICc`, `AIC` and `BIC`; the full model has
+#' `rank = 0`.
 #'
 #' @examples
 #' fit <- lm(mpg ~ wt * hp + disp, data = mtcars, na.action = na.fail)
@@ -306,13 +315,13 @@ y_fit_models_rank <- function(fit, rank = "AICc", top = 10){
 
 
 #' @title Plot model-averaged coefficients
-#' @description Plots coefficients averaged across AICc models within
-#' `delta < 3`.
+#' @description Plots relative importance and averaged coefficients for AICc
+#' models within `delta < 3`.
 #'
 #' @param fit A fitted model accepted by [MuMIn::dredge()].
 #' @param fig.name Optional data frame: input labels in column 1 and display
 #' labels in column 2.
-#' @return A list with two ggplot objects: `sw` and `avg`.
+#' @return A list with `sw` (relative importance) and `avg` (coefficients).
 #'
 #' @family fitting
 #' @export

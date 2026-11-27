@@ -24,7 +24,8 @@ A named list with \code{df_resid}, the model data and residual columns,
 and \code{plot}, a ggplot object.
 }
 \description{
-Plots a partial residual relationship from a fitted model.
+Residualizes the response and focal predictor against other
+fixed effects, then plots their relationship.
 }
 \seealso{
 Other plotting:

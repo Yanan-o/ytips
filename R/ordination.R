@@ -90,7 +90,8 @@ y_ps_to_spe <- function(ps, i.trt = 1, i.env = NULL, output = 'spe'){
 
 
 #' @title Calculate alpha-diversity metrics
-#' @description Calculates common alpha-diversity metrics.
+#' @description Calculates abundance, richness, Shannon, Simpson and Pielou
+#' metrics.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @return A data frame of alpha-diversity metrics.
@@ -112,7 +113,8 @@ y_alpha_diversity <- function(spe){
 
 
 #' @title Decompose community change with the Price equation
-#' @description Calculates Price-equation components for sample pairs.
+#' @description Calculates Price-equation components for sample pairs,
+#' including richness, composition, colonization and extinction effects.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -232,7 +234,8 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 
 
 #' @title Partition beta diversity
-#' @description Partitions Sorensen and Bray-Curtis beta diversity.
+#' @description Partitions Sorensen and Bray-Curtis beta diversity into
+#' turnover/nestedness or balanced variation/gradient components.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -287,7 +290,8 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 
 
 #' @title Estimate species contributions to beta diversity
-#' @description Calculates species contributions to Bray-Curtis dissimilarity.
+#' @description Calculates species contributions to Bray-Curtis dissimilarity
+#' and groups the remainder as Others.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.

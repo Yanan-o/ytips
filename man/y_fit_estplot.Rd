@@ -28,7 +28,8 @@ labels in column 2.}
 A ggplot object.
 }
 \description{
-Plots fixed-effect estimates and confidence intervals.
+Plots fixed-effect estimates and confidence intervals, with
+optional residual diagnostics and random-forest variable importance.
 }
 \seealso{
 Other fitting:

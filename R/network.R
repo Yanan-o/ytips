@@ -62,7 +62,8 @@ y_ps <- function(otu.df, sample.df, taxa.df = NULL, rarefy = FALSE){
 
 
 #' @title Filter and normalise a phyloseq object
-#' @description Filters and normalises phyloseq data.
+#' @description Removes empty samples and taxa, then applies abundance and
+#' prevalence filters.
 #'
 #' @param ps A phyloseq object.
 #' @param filter.n Keep the top N OTUs by total abundance when nonzero.

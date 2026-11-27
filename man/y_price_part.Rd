@@ -20,7 +20,8 @@ pair.}
 A data frame of Price-equation components.
 }
 \description{
-Calculates Price-equation components for sample pairs.
+Calculates Price-equation components for sample pairs,
+including richness, composition, colonization and extinction effects.
 }
 \examples{
 spe <- matrix(c(1, 2, 0, 1, 3, 1), nrow = 3,

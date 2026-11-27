@@ -19,7 +19,8 @@ A named list with \code{df_p}, containing the relative explanatory power
 and labels, and \code{plot}, a ggplot object.
 }
 \description{
-Compares explanatory variation for two response components.
+Compares explained variation for two response components using
+the same model structure.
 }
 \seealso{
 Other plotting:

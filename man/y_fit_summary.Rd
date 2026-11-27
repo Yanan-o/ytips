@@ -12,10 +12,12 @@ model object.}
 }
 \value{
 A list with \code{df}, \code{name_y}, \code{name_x}, \code{Est.txt}, numeric R-squared
-values in \code{rr}, and formatted labels in \code{rr.txt}.
+values in \code{rr}, and formatted labels in \code{rr.txt}. \code{rr} contains \code{R2} for
+ordinary models and \code{Rm}/\code{Rc} for mixed models.
 }
 \description{
-Returns model data, fixed-effect estimates and R-squared values.
+Extracts model data, fixed-effect estimates and R-squared values
+from \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} models.
 }
 \examples{
 fit <- lm(mpg ~ wt + hp, data = mtcars)

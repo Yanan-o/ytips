@@ -7,7 +7,8 @@
 y_fit_msetable(fit, digits = 2, show = c("est", "mse"))
 }
 \arguments{
-\item{fit}{A fitted model accepted by \code{\link[=y_fit_summary]{y_fit_summary()}}.}
+\item{fit}{A fitted model accepted by \code{\link[=y_fit_summary]{y_fit_summary()}}. \code{show = "mse"}
+requires one categorical predictor.}
 
 \item{digits}{Number of decimal places.}
 
@@ -18,7 +19,7 @@ y_fit_msetable(fit, digits = 2, show = c("est", "mse"))
 A one-row wide data frame.
 }
 \description{
-Builds a one-row coefficient table for a fitted model.
+Builds a one-row coefficient table with an R-squared column.
 }
 \seealso{
 Other fitting:

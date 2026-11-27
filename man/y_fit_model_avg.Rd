@@ -13,11 +13,11 @@ y_fit_model_avg(fit, fig.name = NULL)
 labels in column 2.}
 }
 \value{
-A list with two ggplot objects: \code{sw} and \code{avg}.
+A list with \code{sw} (relative importance) and \code{avg} (coefficients).
 }
 \description{
-Plots coefficients averaged across AICc models within
-\code{delta < 3}.
+Plots relative importance and averaged coefficients for AICc
+models within \code{delta < 3}.
 }
 \seealso{
 Other fitting:

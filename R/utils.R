@@ -1,5 +1,6 @@
 #' @title Find matching paths in OneDrive
-#' @description Searches detected OneDrive folders for matching paths.
+#' @description Searches detected OneDrive folders, not the full computer, for
+#' matching paths.
 #'
 #' @param x File or folder name, or a path suffix using `/`.
 #' @param contents Whether matching folders return their first-level contents.

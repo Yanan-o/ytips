@@ -15,7 +15,8 @@ onedrive(x, contents = FALSE)
 All matching paths, or folder contents when \code{contents = TRUE}.
 }
 \description{
-Searches detected OneDrive folders for matching paths.
+Searches detected OneDrive folders, not the full computer, for
+matching paths.
 }
 \examples{
 \dontrun{

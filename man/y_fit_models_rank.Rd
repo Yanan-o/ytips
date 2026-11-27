@@ -7,15 +7,17 @@
 y_fit_models_rank(fit, rank = "AICc", top = 10)
 }
 \arguments{
-\item{fit}{A fitted model accepted by \code{\link[MuMIn:dredge]{MuMIn::dredge()}}, preferably fitted
-with \code{na.action = na.fail}.}
+\item{fit}{A fitted model accepted by \code{\link[MuMIn:dredge]{MuMIn::dredge()}}. Use
+\code{na.action = na.fail}.}
 
-\item{rank}{Ranking criterion accepted by \code{\link[MuMIn:dredge]{MuMIn::dredge()}}.}
+\item{rank}{Ranking criterion, such as \code{"AICc"}, \code{"AIC"} or \code{"BIC"}.}
 
 \item{top}{Number of ranked subsets, excluding the full model.}
 }
 \value{
-A list with \code{best_fit} and a model table in \code{fit_rank}.
+A list with \code{best_fit} and \code{fit_rank}. \code{fit_rank} contains \code{rank},
+\code{formula}, \code{R2} or \code{Rm}/\code{Rc}, \code{AICc}, \code{AIC} and \code{BIC}; the full model has
+\code{rank = 0}.
 }
 \description{
 Ranks fixed-effect model subsets with \code{\link[MuMIn:dredge]{MuMIn::dredge()}}.

@@ -18,7 +18,7 @@ y_psem_formula(
 \item{fit}{A fitted \code{lmer} model, or a list whose first element is a fitted
 \code{lmer} model.}
 
-\item{sem.f}{Formula-building mode.}
+\item{sem.f}{Formula-building mode, such as a step or full model.}
 
 \item{sem.data}{Data used to fit the SEM.}
 
@@ -34,7 +34,7 @@ y_psem_formula(
 A list containing a formula string and model data.
 }
 \description{
-Builds a piecewiseSEM formula from fitted models.
+Builds a piecewiseSEM formula from one or more fitted models.
 }
 \examples{
 \dontrun{

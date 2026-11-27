@@ -31,7 +31,7 @@ A piecewiseSEM fit or a list containing fit results and plot data.
 }
 \description{
 Fits a piecewiseSEM model with optional bootstrap confidence
-intervals.
+intervals; \code{nrep = 0} skips bootstrapping.
 }
 \seealso{
 Other piecewiseSEM:

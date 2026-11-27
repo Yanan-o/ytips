@@ -19,7 +19,8 @@ A fitted model when \code{output = "best_fit"}; otherwise a list with
 \code{best_fit} and \code{all_res}.
 }
 \description{
-Selects fixed-effect subsets for piecewiseSEM.
+Fits predictor subsets and ranks them by AICc or p-value
+thresholds.
 }
 \seealso{
 Other piecewiseSEM:

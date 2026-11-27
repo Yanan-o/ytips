@@ -15,7 +15,8 @@ y_descdist(x, discrete = FALSE)
 The distribution-diagnostic result.
 }
 \description{
-Draws distribution diagnostics.
+Draws a Shapiro-Wilk test, histogram, density, QQ plot and
+Cullen-Frey diagnostic.
 }
 \seealso{
 Other fitting:

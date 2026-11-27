@@ -27,7 +27,8 @@ y_ps_filter(
 A filtered phyloseq object.
 }
 \description{
-Filters and normalises phyloseq data.
+Removes empty samples and taxa, then applies abundance and
+prevalence filters.
 }
 \seealso{
 Other network:

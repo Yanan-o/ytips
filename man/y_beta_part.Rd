@@ -18,7 +18,8 @@ A named list with \code{beta_part.res}, the pairwise diversity
 components, and \code{plot}, a named list of two ggplot objects.
 }
 \description{
-Partitions Sorensen and Bray-Curtis beta diversity.
+Partitions Sorensen and Bray-Curtis beta diversity into
+turnover/nestedness or balanced variation/gradient components.
 }
 \examples{
 \dontrun{

@@ -38,7 +38,8 @@ labels in column 2.}
 A ggplot object.
 }
 \description{
-Plots a numeric response by groups.
+Plots a numeric response by groups for box, bar, violin, line
+and combined group plots.
 }
 \seealso{
 Other plotting:

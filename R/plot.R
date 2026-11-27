@@ -1,5 +1,6 @@
 #' @title Plot a numeric response by groups
-#' @description Plots a numeric response by groups.
+#' @description Plots a numeric response by groups for box, bar, violin, line
+#' and combined group plots.
 #'
 #' @param df Data frame whose first two columns are the response and grouping
 #' variable; an optional third column defines colors.
@@ -287,7 +288,8 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 
 
 #' @title Plot a partial residual relationship from a fitted model
-#' @description Plots a partial residual relationship from a fitted model.
+#' @description Residualizes the response and focal predictor against other
+#' fixed effects, then plots their relationship.
 #'
 #' @param fit A fitted `lm` or `lmer` model with at least one numeric
 #' fixed-effect predictor.
@@ -324,7 +326,8 @@ y_fit_partial_plot <- function(fit, x.fixed = "", fig.name = NULL, ...){
 
 
 #' @title Decompose explanatory variation
-#' @description Compares explanatory variation for two response components.
+#' @description Compares explained variation for two response components using
+#' the same model structure.
 #'
 #' @param fit A fitted `lm` or `lmer` model.
 #' @param y1,y2 Single character strings naming the two numeric response

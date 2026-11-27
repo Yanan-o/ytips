@@ -11,13 +11,14 @@ y_fit_update(fit, str = "", x.order = NULL)
 
 \item{str}{Formula update text, such as \code{"+ x1 - x2"}.}
 
-\item{x.order}{Optional term order.}
+\item{x.order}{Optional fixed-effect term order.}
 }
 \value{
 An updated fitted model.
 }
 \description{
-Updates a model formula and keeps its random effects.
+Updates a formula, orders fixed-effect terms and keeps random
+effects.
 }
 \seealso{
 Other fitting:

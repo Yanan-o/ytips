@@ -40,7 +40,8 @@ y_beta_simper(
 A named list with \code{simper.res}, \code{simper.res.mean}, and \code{plot}.
 }
 \description{
-Calculates species contributions to Bray-Curtis dissimilarity.
+Calculates species contributions to Bray-Curtis dissimilarity
+and groups the remainder as Others.
 }
 \seealso{
 Other ordination:
