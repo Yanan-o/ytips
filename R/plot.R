@@ -1,7 +1,5 @@
 #' @title Plot a numeric response by groups
-#' @description Supports box, bar, violin, line and combined group plots. The
-#' first two data columns are treated as response and grouping variables. If
-#' present, the third column is used for color groups.
+#' @description Plots a numeric response by groups.
 #'
 #' @param df Data frame whose first two columns are the response and grouping
 #' variable; an optional third column defines colors.
@@ -60,10 +58,7 @@ y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'lin
 
 
 #' @title Plot fitted-model predictions by group
-#' @description Combines fitted predictions with class-level plotting. The
-#' fitted model should contain one categorical predictor. Significance letters
-#' or brackets are added according to pairwise. Significance letters or
-#' brackets are added according to pairwise.
+#' @description Plots fitted-model predictions by group.
 #'
 #' @param fit A fitted model with exactly one categorical predictor.
 #' @param plot Plot type or an existing ggplot object.
@@ -104,7 +99,7 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
         rcompanion::cldList(p.value ~ contrast, reversed = FALSE, data = .) %>% mutate(p.sig = Letter) -> est.p;
        if(length(unique(est.p$p.sig)) == 1){' ' -> est.p$p.sig} } else{
         emmeans::contrast(emm,  method = "trt.vs.ctrl", adjust = p.adjust) %>% as.data.frame() %>%
-        mutate(p.sig = ifelse(p.value < .01, "**", ifelse(p.value < .05, '*', " ")), x = gsub(' -.*', '',contrast)) -> est.p }
+        mutate(p.sig = ifelse(p.value < .01, "**", ifelse(p.value < .05, "*", " ")), x = gsub(' -.*', '',contrast)) -> est.p }
 
       car::Anova(fit) %>% data.frame() %>% .[1,] %>%  select(contains('Pr')) %>% rename_with(~'P') %>%
       mutate(P = ifelse(P < 0.01,  "~`<`~0.01", paste0("~`=`~", formatC(P, format = "f", digits = 2))) %>% paste0("italic(p)", .) ) -> P.txt
@@ -292,15 +287,14 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 
 
 #' @title Plot a partial residual relationship from a fitted model
-#' @description Residualizes the response and one focal predictor against all
-#' other fixed-effect predictors in `fit`, then plots their residual
-#' relationship. Random effects in `fit` are retained when the component
-#' models are fitted.
+#' @description Plots a partial residual relationship from a fitted model.
 #'
 #' @param fit A fitted `lm` or `lmer` model with at least one numeric
 #' fixed-effect predictor.
 #' @param x.fixed A single character string naming the numeric fixed-effect
 #' predictor whose partial relationship is plotted.
+#' @param fig.name Optional two-column data frame: input labels in column 1 and
+#' display labels in column 2. Applies to the response and `x.fixed`.
 #' @param ... Additional arguments passed to [y_fit_linesplot()], such as
 #' `show.p`, `show.se`, `point.size`, or `line.size`.
 #' @return A named list with `df_resid`, the model data and residual columns,
@@ -310,10 +304,9 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 #' @export
 #'
 
-y_fit_partial_plot <- function(fit, x.fixed = "", ...){
+y_fit_partial_plot <- function(fit, x.fixed = "", fig.name = NULL, ...){
 
-  fit %>% y_fit_summary() -> fit.res
-  fit.res$df -> df; fit.res$name_y -> y
+  fit %>% y_fit_summary() -> fit.res; fit.res$df -> df; fit.res$name_y -> y
   stats::update(fit, formula. = stats::as.formula(paste0('. ~ . - ', x.fixed))) -> fit1
   stats::update(fit1, formula. = stats::as.formula(paste0(x.fixed, ' ~ .'))) -> fit2
 
@@ -321,16 +314,17 @@ y_fit_partial_plot <- function(fit, x.fixed = "", ...){
 
   # plot
   lm(residual.y ~ residual.x.fixed, data = df_residuals) -> fit_residual # 此处不需要再加random
-  fit_residual %>% y_fit_linesplot(...) + labs(y = paste0("Residuals of ", y), x = paste0("Residuals of ", x.fixed)) -> p
+  c(y, x.fixed) -> name.fig; if(!is.null(fig.name)){fig.name[match(name.fig, fig.name[,1]), 2] -> name.fig}
+
+  fit_residual %>% y_fit_linesplot(fig.name = NULL, ...) +
+    labs(y = paste0("Residuals of ", name.fig[1]), x = paste0("Residuals of ", name.fig[2])) -> p
   return(list("df_resid" = df_residuals, "plot" = p))
 }
 
 
 
 #' @title Decompose explanatory variation
-#' @description Compares the fixed-effect variation explained for two response
-#' components and reports their relative explanatory power. The components are
-#' fitted with the same fixed- and random-effect structure as `fit`.
+#' @description Compares explanatory variation for two response components.
 #'
 #' @param fit A fitted `lm` or `lmer` model.
 #' @param y1,y2 Single character strings naming the two numeric response
@@ -371,47 +365,55 @@ y_fit_decomposition_plot <- function(fit, y1 = "", y2 = "", name.yy = c(y1, y2))
 
 
 #' @title Draw a correlation bubble plot
-#' @description Draws a bubble matrix for correlations and significance. Input
-#' columns are label-x, label-y, correlation value, and an optional
-#' significance label.
+#' @description Draws a correlation bubble matrix.
 #'
-#' @param df Data frame with label-x, label-y, correlation, and optional p-value columns.
-#' @param fill.lim Optional correlation color limits.
-#' @param point.size Point size.
-#' @param legend.title Legend title.
-#' @param legend.direction Legend direction.
-#' @param cols Optional color values.
+#' @param df Data frame with x labels, y labels, correlations, and optional
+#' significance labels.
+#' @param fill.lim Optional limits for correlation colors.
+#' @param point.size Bubble-size multiplier.
+#' @param fig.name Optional two-column data frame: input labels in column 1 and
+#' display labels in column 2. Applies to both axes.
+#' @param legend.title Character string used as the legend title.
+#' @param base.size Base text size.
+#' @param legend.direction Legend direction, `"v"` or `"h"`.
+#' @param cols Colors for low, middle, and high correlations.
 #' @return A ggplot object.
+#'
+#' @examples
+#' cor <- data.frame(
+#'   x = c("a", "b", "a", "b"),
+#'   y = c("a", "a", "b", "b"),
+#'   r = c(1, .4, .4, 1),
+#'   p = c("", "*", "*", "")
+#' )
+#' y_corrplot(cor)
 #'
 #' @family plotting
 #' @export
 #'
 
-y_corrplot <- function(df, fill.lim = NULL, point.size = .66, legend.title = ' ',
-                       legend.direction = 'v', cols = c("#FF1493", "white", "steelblue2")){
+y_corrplot <- function(df, fill.lim = NULL, point.size = .8, fig.name = NULL, legend.title = ' ',
+                       base.size = 10, legend.direction = 'v', cols = NULL){
 
-  # df includes name_x, name_y, value, p.sig
+  if(is.null(cols)){colorRampPalette(c("steelblue2", "white", "#FF1493"))(8) -> cols}
+  if(ncol(df) == 3){mutate(df, p.sig = ' ') -> df}; df %>% rename_with(~c('name_x', 'name_y', 'value', 'p.sig')) -> df
+  if(!is.null(fig.name)){fig.name[match(df$name_x, fig.name[,1]), 2] -> df$name_x; fig.name[match(df$name_y, fig.name[,1]), 2] -> df$name_y;}
+  df %>% mutate(name_x = factor(name_x, levels = unique(name_x)), name_y = factor(name_y, levels = rev(unique(name_y))) ) -> df
 
-  if(ncol(df) == 3){mutate(df, p.sig = ' ') -> df}; df %>% rename_with(~c('name_x', 'name_y', 'value', 'p.sig')) %>%
-    mutate(name_x = factor(name_x, levels = unique(name_x)), name_y = factor(name_y, levels = rev(unique(name_y))) ) -> df
-
-  if(is.null(fill.lim)){c(min(df$value), max(df$value)) -> fill.lim}; if(fill.lim[1] < 0 && fill.lim[2] > 0){
-    seq(0, max(abs(fill.lim)), length.out = 8) -> limits.cut} else{seq(fill.lim[1], fill.lim[2], length.out = 8) -> limits.cut}
-
-  df %>% mutate(value_cut = cut(abs(value), breaks = c(limits.cut, Inf), labels = FALSE)) -> df.p
+  if(is.null(fill.lim)){c(min(df$value), max(df$value)) -> fill.lim}; seq(0, max(abs(fill.lim)), length.out = 8) -> limits.cut
+  df %>% mutate(value_cut = cut(abs(value), breaks = c(limits.cut, Inf), labels = FALSE, include.lowest = TRUE)) -> df.p
 
   ggplot(df.p, aes(x = name_x, y = name_y)) +
-    geom_tile(color = 1, fill = "white", size = .05) +
-    geom_point(aes(fill = value), pch = 22,  colour = alpha('white', 0), size = point.size * df.p$value_cut) +
-    geom_text(aes(label = p.sig), color = 1, size = 5, nudge_y = -.18, nudge_x = 0) + labs(x = "", y = "") -> p
+    geom_tile(color = 1, fill = "white", linewidth = .05) +
+    geom_point(aes(fill = value), pch = 22,  colour = 'white', size = point.size * df.p$value_cut) +
+    geom_text(aes(label = p.sig), color = 1, size = 5, nudge_y = -.18, hjust = .5) + labs(x = "", y = "") -> p
 
-  if(legend.direction != "horizontal"){guide_colorbar() -> legend.guide} else{
+  if(legend.direction[1] == 'v'){guide_colorbar() -> legend.guide} else{
       guide_colorbar(direction = "horizontal", title.position = "top", title.hjust = .5 , label.position = "bottom",
                      label.theme = element_text(angle = 70, size = 8,  hjust = 1, vjust = 1.02)) -> legend.guide}
 
-    p + scale_fill_gradientn(name = legend.title, colours = colorRampPalette(cols)(8), limits = fill.lim, guide = legend.guide) +
-
-      theme_minimal() + theme(panel.grid = element_blank()) + theme(plot.background = element_rect(fill = "white", linetype = 0)) +
+    p + scale_fill_gradientn(name = legend.title, colours = cols, limits = fill.lim, guide = legend.guide) +
+      theme_minimal(base.size) + theme(panel.grid = element_blank()) + theme(plot.background = element_rect(fill = "white", linetype = 0)) +
       theme(axis.text = element_text(color = 1)) + theme(axis.text.x = element_text(angle = 70, hjust = 1, vjust = 1.02)) %>%
     return()
 }

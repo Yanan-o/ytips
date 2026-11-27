@@ -9,35 +9,23 @@ y_fit_predict(fit, newdata = NULL, re_formula = NA)
 \arguments{
 \item{fit}{A fitted \code{lm}, \code{glm}, \code{lmer}, \code{glmer}, \code{glmmTMB} or \code{brmsfit} model.}
 
-\item{newdata}{\code{NULL} uses the model data; a data frame supplies predictor
-values directly; a character value such as \code{"grid"} generates a balanced grid
-across the observed predictor ranges.}
+\item{newdata}{Model data, predictor values, or \code{"grid"} for a generated grid.}
 
-\item{re_formula}{Random-effect handling. \code{NA} gives population-level
-predictions, while \code{NULL} retains all random effects.}
+\item{re_formula}{\code{NA} excludes random effects; \code{NULL} includes them.}
 }
 \value{
 A data frame containing fitted values and intervals.
 }
 \description{
-Returns observed data with fitted values and 95\% confidence
-intervals for supported models. By default, predictions use fixed effects
-only; \code{re_formula} controls whether random effects are retained.
-}
-\details{
-Automatic grids include all fixed-effect predictors. Numeric
-variables use evenly spaced values across their observed range, while
-categorical variables retain their observed levels. Up to two fixed-effect
-predictors use 100 numeric values each; with more predictors, the number of
-values per predictor is reduced to keep the grid near 10,000 combinations.
+Adds fitted values and 95\% confidence intervals to model data.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},

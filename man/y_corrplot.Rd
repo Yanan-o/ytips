@@ -7,32 +7,48 @@
 y_corrplot(
   df,
   fill.lim = NULL,
-  point.size = 0.66,
+  point.size = 0.8,
+  fig.name = NULL,
   legend.title = " ",
+  base.size = 10,
   legend.direction = "v",
-  cols = c("#FF1493", "white", "steelblue2")
+  cols = NULL
 )
 }
 \arguments{
-\item{df}{Data frame with label-x, label-y, correlation, and optional p-value columns.}
+\item{df}{Data frame with x labels, y labels, correlations, and optional
+significance labels.}
 
-\item{fill.lim}{Optional correlation color limits.}
+\item{fill.lim}{Optional limits for correlation colors.}
 
-\item{point.size}{Point size.}
+\item{point.size}{Bubble-size multiplier.}
 
-\item{legend.title}{Legend title.}
+\item{fig.name}{Optional two-column data frame: input labels in column 1 and
+display labels in column 2. Applies to both axes.}
 
-\item{legend.direction}{Legend direction.}
+\item{legend.title}{Character string used as the legend title.}
 
-\item{cols}{Optional color values.}
+\item{base.size}{Base text size.}
+
+\item{legend.direction}{Legend direction, \code{"v"} or \code{"h"}.}
+
+\item{cols}{Colors for low, middle, and high correlations.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Draws a bubble matrix for correlations and significance. Input
-columns are label-x, label-y, correlation value, and an optional
-significance label.
+Draws a correlation bubble matrix.
+}
+\examples{
+cor <- data.frame(
+  x = c("a", "b", "a", "b"),
+  y = c("a", "a", "b", "b"),
+  r = c(1, .4, .4, 1),
+  p = c("", "*", "*", "")
+)
+y_corrplot(cor)
+
 }
 \seealso{
 Other plotting:

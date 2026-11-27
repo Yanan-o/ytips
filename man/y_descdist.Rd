@@ -15,17 +15,15 @@ y_descdist(x, discrete = FALSE)
 The distribution-diagnostic result.
 }
 \description{
-Plots Shapiro-Wilk diagnostics, distribution graphics and the
-Cullen-Frey diagnostic. Combines a Shapiro-Wilk test, boxplot, histogram,
-density and QQ plot with the Cullen-Frey distribution diagnostic.
+Draws distribution diagnostics.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},

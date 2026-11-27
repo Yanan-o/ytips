@@ -19,7 +19,7 @@ y_ps_to_spe(ps, i.trt = 1, i.env = NULL, output = "spe")
 A community matrix or a list of converted data.
 }
 \description{
-Converts phyloseq abundance, sample and taxonomy tables.
+Converts phyloseq data to community matrices.
 }
 \seealso{
 Other ordination:

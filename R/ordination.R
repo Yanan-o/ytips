@@ -61,7 +61,7 @@
 
 
 #' @title Convert a phyloseq object to community matrices
-#' @description Converts phyloseq abundance, sample and taxonomy tables.
+#' @description Converts phyloseq data to community matrices.
 #'
 #' @param ps A phyloseq object.
 #' @param i.trt Column index or name defining treatment groups.
@@ -90,8 +90,7 @@ y_ps_to_spe <- function(ps, i.trt = 1, i.env = NULL, output = 'spe'){
 
 
 #' @title Calculate alpha-diversity metrics
-#' @description Calculates abundance, richness, Shannon, Simpson and Pielou
-#' metrics.
+#' @description Calculates common alpha-diversity metrics.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @return A data frame of alpha-diversity metrics.
@@ -113,15 +112,13 @@ y_alpha_diversity <- function(spe){
 
 
 #' @title Decompose community change with the Price equation
-#' @description Calculates Price-equation components for sample pairs. Splits
-#' community change into richness, composition, colonization, extinction and
-#' resident-species effects.
+#' @description Calculates Price-equation components for sample pairs.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
 #' @param func.inrr Optional function expression used to transform a sample
 #' pair.
-#' @param pairs.id Optional sample-pair identifiers separated by ' vs ' .
+#' @param pairs.id Optional sample-pair identifiers separated by `" vs "`.
 #' @return A data frame of Price-equation components.
 #'
 #' @examples
@@ -183,7 +180,7 @@ y_price_part <- function(spe, trt, func.inrr = NULL, pairs.id = NULL){
 #' @title Plot Price-equation components
 #' @description Plots two-, three- or five-component Price-equation paths.
 #'
-#' @param price.df Data returned by y_price_part() .
+#' @param price.df Data returned by [y_price_part()].
 #' @param price Number of Price-equation components: 2, 3, or 5.
 #' @param cols Optional color values.
 #' @param xlim Optional x-axis limits.
@@ -235,13 +232,11 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 
 
 #' @title Partition beta diversity
-#' @description Partitions Sorensen and Bray-Curtis beta diversity. Sorensen
-#' dissimilarity is split into turnover and nestedness. Bray-Curtis
-#' dissimilarity is split into balanced variation and gradient.
+#' @description Partitions Sorensen and Bray-Curtis beta diversity.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
-#' @param pairs.id Optional sample-pair identifiers separated by ' vs ' .
+#' @param pairs.id Optional sample-pair identifiers separated by `" vs "`.
 #' @return A named list with `beta_part.res`, the pairwise diversity
 #' components, and `plot`, a named list of two ggplot objects.
 #'
@@ -293,16 +288,13 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 
 #' @title Estimate species contributions to beta diversity
 #' @description Calculates species contributions to Bray-Curtis dissimilarity.
-#' Species contributions are aggregated by sample pair and the remaining
-#' contributions are grouped as Others.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
-#' @param pairs.id Optional sample-pair identifiers separated by ' vs ' .
+#' @param pairs.id Optional sample-pair identifiers separated by `" vs "`.
 #' @param cols Optional color values.
 #' @param ylim Upper y-axis limit.
-#' @param show.contri Cumulative contribution retained before grouping the
-#' remainder as Others .
+#' @param show.contri Cumulative contribution retained before grouping Others.
 #' @param show.adonis Whether to add PERMANOVA results to the plot.
 #' @param show.p.pairs Text filter for displayed pairwise PERMANOVA results.
 #' @param ... Additional arguments passed to [yy_adonis_summary()] when
@@ -378,8 +370,7 @@ y_beta_indispecies <- function(spe, trt){
 
 
 #' @title Run PERMANOVA and format the result
-#' @description Runs PERMANOVA and pairwise post-hoc comparisons. Returns
-#' formatted labels for total and pairwise PERMANOVA results.
+#' @description Runs PERMANOVA and formats its results.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -421,8 +412,7 @@ yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('', 'CK'
 
 
 #' @title Format constrained-ordination tests
-#' @description Formats global and marginal tests for a constrained ordination
-#' model.
+#' @description Formats constrained-ordination tests.
 #'
 #' @param model.ord An ordination model returned by vegan.
 #' @return A list containing formatted test labels and arrow colors.
@@ -468,9 +458,7 @@ yy_envfit_arrow <- function(model.ord, env){
 
 
 #' @title Calculate individual environmental contributions
-#' @description Calculates individual and grouped environmental contributions.
-#' Calculates individual environmental contributions and, optionally, the
-#' contribution of predefined variable groups.
+#' @description Calculates environmental contributions.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param env Environmental variables.
@@ -580,7 +568,7 @@ yy_ord_plot <- function(point.df, arrow.df = NULL, eig = NULL, rr.txt = NULL, n.
 
 
 #' @title Draw a principal-components ordination
-#' @description Runs PCA and delegates plotting to yy_ord_plot.
+#' @description Draws a PCA ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -615,7 +603,7 @@ y_pca_plot <- function(spe, trt, show.arrow = TRUE, ...){
 
 
 #' @title Draw a principal-coordinates ordination
-#' @description Runs PCoA and delegates plotting to yy_ord_plot.
+#' @description Draws a PCoA ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -655,7 +643,7 @@ y_pcoa_plot <- function(spe, trt, env = NULL, show.p = 0.05, show.p.pairs = '',
 
 
 #' @title Draw a non-metric multidimensional scaling ordination
-#' @description Runs NMDS and delegates plotting to yy_ord_plot.
+#' @description Draws an NMDS ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -690,7 +678,7 @@ y_nmds_plot <- function(spe, trt, env = NULL, show.p = 0.05, show.p.pairs = '', 
 
 
 #' @title Draw a redundancy-analysis ordination
-#' @description Runs RDA and delegates plotting to yy_ord_plot.
+#' @description Draws an RDA ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -737,7 +725,7 @@ y_rda_plot <- function(spe, trt, env, env.condition = NULL, show.arrow = c('bipl
 
 
 #' @title Draw a canonical-correspondence ordination
-#' @description Runs CCA and delegates plotting to yy_ord_plot.
+#' @description Draws a CCA ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.
@@ -776,7 +764,7 @@ y_cca_plot <- function(spe, trt, env, env.condition = NULL, show.arrow = c('bipl
 
 
 #' @title Draw a distance-based redundancy ordination
-#' @description Runs db-RDA and delegates plotting to yy_ord_plot.
+#' @description Draws a db-RDA ordination.
 #'
 #' @param spe A community matrix with samples in rows.
 #' @param trt Treatment grouping vector.

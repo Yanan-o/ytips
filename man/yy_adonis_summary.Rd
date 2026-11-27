@@ -30,8 +30,7 @@ yy_adonis_summary(
 A list containing formatted PERMANOVA labels.
 }
 \description{
-Runs PERMANOVA and pairwise post-hoc comparisons. Returns
-formatted labels for total and pairwise PERMANOVA results.
+Runs PERMANOVA and formats its results.
 }
 \seealso{
 Other ordination:

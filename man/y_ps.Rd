@@ -20,8 +20,7 @@ identifiers.}
 A phyloseq object.
 }
 \description{
-Creates a phyloseq object from abundance, sample and taxonomy
-tables.
+Converts abundance, sample and taxonomy tables to phyloseq.
 }
 \examples{
 \dontrun{

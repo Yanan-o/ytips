@@ -13,7 +13,7 @@ y_price_part_plot(
 )
 }
 \arguments{
-\item{price.df}{Data returned by y_price_part() .}
+\item{price.df}{Data returned by \code{\link[=y_price_part]{y_price_part()}}.}
 
 \item{price}{Number of Price-equation components: 2, 3, or 5.}
 

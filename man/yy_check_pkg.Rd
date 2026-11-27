@@ -11,17 +11,13 @@ yy_check_pkg(pkg, install.hint = NULL, ask = NULL)
 
 \item{install.hint}{Optional installation command.}
 
-\item{ask}{Whether to ask before installing. If \code{NULL}, asks in RStudio or
-an interactive R session, but not during automated tests.}
+\item{ask}{Whether to ask before installing.}
 }
 \value{
 Invisibly returns \code{TRUE} when all packages are available.
 }
 \description{
-Checks whether required packages are installed. In an
-interactive R session, missing packages trigger a prompt to install them or
-stop the current call. Non-interactive sessions stop with the installation
-command.
+Checks required packages and reports missing ones.
 }
 \seealso{
 Other utilities:

@@ -20,7 +20,7 @@ y_pca_plot(spe, trt, show.arrow = TRUE, ...)
 A ggplot object.
 }
 \description{
-Runs PCA and delegates plotting to yy_ord_plot.
+Draws a PCA ordination.
 }
 \examples{
 if (requireNamespace("vegan", quietly = TRUE)) {

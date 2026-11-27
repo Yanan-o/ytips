@@ -17,7 +17,7 @@ y_psem_step(
 )
 }
 \arguments{
-\item{psem.res}{A result returned by y_psem_boot() .}
+\item{psem.res}{A result returned by \code{\link[=y_psem_boot]{y_psem_boot()}}.}
 
 \item{id}{Identifiers of the paths to remove.}
 
@@ -29,8 +29,7 @@ y_psem_step(
 
 \item{corr.p}{Prune correlations above this p-value threshold.}
 
-\item{nrep}{Number of bootstrap replicates; zero fits the model without
-bootstrapping.}
+\item{nrep}{Number of bootstrap replicates; zero disables bootstrapping.}
 
 \item{show.p}{Significance threshold used for display.}
 
@@ -40,14 +39,13 @@ bootstrapping.}
 The pruned piecewiseSEM result, invisibly.
 }
 \description{
-Removes paths by identifier, variable, p-value or step count.
-Paths can be removed by identifier, variable, highest p-value, or a maximum
-number of steps.
+Removes paths from a piecewiseSEM result.
 }
 \seealso{
 Other piecewiseSEM:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula]{y_psem_formula()}},
-\code{\link[=y_psem_formula_update]{y_psem_formula_update()}}
+\code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
+\code{\link[=yy_fit_step]{yy_fit_step()}}
 }
 \concept{piecewiseSEM}

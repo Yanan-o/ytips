@@ -7,14 +7,13 @@
 y_psem_formula_update(sem.formula, sem.data, id = NULL, str = NULL)
 }
 \arguments{
-\item{sem.formula}{A piecewiseSEM formula string or a list returned by
-y_psem_formula() .}
+\item{sem.formula}{A formula or a list returned by \code{\link[=y_psem_formula]{y_psem_formula()}}.}
 
 \item{sem.data}{Data used to fit the SEM.}
 
 \item{id}{Identifiers of the paths to remove.}
 
-\item{str}{Formula update text, such as + x1 - x2 .}
+\item{str}{Formula update text, such as \code{"+ x1 - x2"}.}
 }
 \value{
 A list containing an updated formula and model data.
@@ -26,6 +25,7 @@ Updates selected paths in an existing piecewiseSEM formula.
 Other piecewiseSEM:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula]{y_psem_formula()}},
-\code{\link[=y_psem_step]{y_psem_step()}}
+\code{\link[=y_psem_step]{y_psem_step()}},
+\code{\link[=yy_fit_step]{yy_fit_step()}}
 }
 \concept{piecewiseSEM}

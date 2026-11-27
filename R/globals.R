@@ -26,5 +26,5 @@ utils::globalVariables(c(
   "func.inrr", "i", "k_in", "weight", "g", ".", ".data", "color", "cc",
   "sub_layout", "delta", "line", "ypre.se", "X.IncMSE2", "Node",
   "row.mean", "group.r", "id.fit", "Std.E", "label", "P.sig", "style",
-  "xmin", "yend", "ymax", "Indval", "sim.mean", "degree"
+  "xmin", "xmax", "yend", "ymax", "Indval", "sim.mean", "degree", "Adj.SE"
 ))

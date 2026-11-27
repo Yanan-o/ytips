@@ -38,9 +38,7 @@ labels in column 2.}
 A ggplot object.
 }
 \description{
-Supports box, bar, violin, line and combined group plots. The
-first two data columns are treated as response and grouping variables. If
-present, the third column is used for color groups.
+Plots a numeric response by groups.
 }
 \seealso{
 Other plotting:

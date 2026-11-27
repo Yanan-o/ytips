@@ -31,7 +31,7 @@ y_db_rda_plot(
 A ggplot object.
 }
 \description{
-Runs db-RDA and delegates plotting to yy_ord_plot.
+Draws a db-RDA ordination.
 }
 \seealso{
 Other ordination:

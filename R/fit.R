@@ -1,7 +1,5 @@
 #' @title Describe the distribution of a numeric vector
-#' @description Plots Shapiro-Wilk diagnostics, distribution graphics and the
-#' Cullen-Frey diagnostic. Combines a Shapiro-Wilk test, boxplot, histogram,
-#' density and QQ plot with the Cullen-Frey distribution diagnostic.
+#' @description Draws distribution diagnostics.
 #'
 #' @param x Numeric vector of observed values.
 #' @param discrete Logical; whether `x` contains discrete counts.
@@ -21,17 +19,17 @@ y_descdist <- function(x, discrete = FALSE){
   fitdistrplus::descdist(x, discrete = discrete, boot = 999, method = "sample", graph = TRUE)
 }
 
+
+
 #' @title Detect and optionally process outliers
-#' @description Flags observations outside the interval defined by the first
-#' and third quartiles plus `multiplier` times the interquartile range.
+#' @description Identifies values outside the interquartile range.
 #'
 #' @param x Numeric vector.
-#' @param multiplier Numeric multiplier for the interquartile range.
+#' @param multiplier Interquartile-range multiplier.
 #' @param action `"flag"` returns a logical vector identifying outliers,
 #' `"na"` replaces outliers with `NA`, and `"winsorize"` replaces outliers with
 #' the nearest boundary.
-#' @return A logical vector for `"flag"`, otherwise a numeric vector with the
-#' same length as `x`.
+#' @return A logical or numeric vector, depending on `action`.
 #'
 #' @family fitting
 #' @export
@@ -52,17 +50,14 @@ y_is_outlier <- function(x, multiplier = 3, action = c("flag", "na", "winsorize"
 }
 
 
+
 #' @title Summarise a fitted model
-#' @description Extracts model data, response and fixed-effect predictor names,
-#' fixed-effect coefficients, and variance explained. Supports `lm`, `glm`,
-#' `lmer`, `glmer`, `glmmTMB` and `brmsfit` models. Use models fitted with
-#' `lmerTest::lmer()` to retain mixed-model p-values.
+#' @description Returns model data, fixed-effect estimates and R-squared values.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit`
 #' model object.
-#' @return A list containing the model data (`df`), response name (`name_y`),
-#' fixed-effect predictor names (`name_x`), coefficient table (`Est.txt`) and
-#' formatted R-squared values (`rr.txt`).
+#' @return A list with `df`, `name_y`, `name_x`, `Est.txt`, numeric R-squared
+#' values in `rr`, and formatted labels in `rr.txt`.
 #'
 #' @examples
 #' fit <- lm(mpg ~ wt + hp, data = mtcars)
@@ -95,30 +90,29 @@ y_fit_summary <- function(fit){
     df %>% select(where(~ !is.numeric(.))) %>% names() -> x.name.sub
     Est.txt %>% mutate(x = gsub(paste0(x.name.sub, collapse = "|"), "", x)) -> Est.txt
     Est.txt <- Est.txt[Est.txt$x != "(Intercept)", , drop = FALSE]; rownames(Est.txt) <- NULL
-    if("p" %in% names(Est.txt)) {Est.txt %>% mutate(p.sig = cut(p, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  ")),
+    if("p" %in% names(Est.txt)) {Est.txt %>% mutate(p.sig = cut(p, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "*", " ")),
       p.txt = ifelse(p < .01, "~`<`~0.01", paste0("~`=`~", formatC(p, format = "f", digits = 2))) %>% paste0("italic(p)", .)) -> Est.txt
       } else { Est.txt %>% mutate(p.sig = NA, p.txt = NA) -> Est.txt }
 
     # RR
-    performance::r2(fit) %>% unlist() -> RR; if(any(is.na(RR[1]))){MuMIn::r.squaredGLMM(fit)[2] -> RR[1]};
+    performance::r2(fit) %>% unlist() -> RR; if(any(is.na(RR[1]))){MuMIn::r.squaredGLMM(fit)[2] -> RR[1]}; RR -> R2
     map(RR, ~{.x = ifelse(.x < 0.01, "~`<`~0.01", paste0("~`=`~", formatC(.x, format = "f", digits = 2)))}) %>% bind_cols() -> RR
-    if(inherits(fit, 'lm')|length(RR) == 1){paste0("R^2", RR[[1]]) -> rr.txt} else{
-      rbind(paste0("R[m]^2", RR[[2]]), paste0("R[c]^2", RR[[1]])) -> rr.txt}; data.frame(rr.txt = rr.txt) -> rr.txt
+    if(inherits(fit, 'lm')|length(RR) == 1){paste0("R^2", RR[[1]]) -> rr.txt; data.frame('R2' = R2[1]) -> R2} else{
+      rbind(paste0("R[m]^2", RR[[2]]), paste0("R[c]^2", RR[[1]])) -> rr.txt; data.frame('Rm' = R2[2], 'Rc' = R2[1]) -> R2};
 
-   list('df' = df, "name_y" = name_y, "name_x" = name_x, "Est.txt" = Est.txt, "rr.txt" = rr.txt)
+   list('df' = df, "name_y" = name_y, "name_x" = name_x, "Est.txt" = Est.txt, "rr" = R2, "rr.txt" = data.frame(rr.txt = rr.txt))
  }
 
 
+
 #' @title Plot fitted-model coefficients
-#' @description Draws fixed-effect estimates and confidence intervals. Residual
-#' diagnostics and random-forest variable importance can be added.
+#' @description Plots fixed-effect estimates and confidence intervals.
 #'
 #' @param fit A fitted model accepted by [y_fit_summary()].
 #' @param fig.name Optional data frame: input labels in column 1 and display
 #' labels in column 2.
-#' @param show.random.forest Whether to overlay random-forest variable
-#' importance. Requires `rfPermute` and `randomForest`.
-#' @param rr.inc Numeric controls for label spacing.
+#' @param show.random.forest Whether to add random-forest variable importance.
+#' @param rr.inc R-squared label spacing.
 #' @param diagnostics Whether to draw model residual diagnostics.
 #' @return A ggplot object.
 #'
@@ -131,7 +125,7 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
     if(diagnostics){yy_check_pkg("DHARMa")}
     if(show.random.forest){yy_check_random_forest_dependencies()}
     if(isTRUE(diagnostics)){DHARMa::simulateResiduals(fittedModel = fit, n = 300) %>% plot()}
-    # 检测模型（左黑点应落于红线，右黑线不水平则遗漏非线性项
+    # Model-fit plot; black points should follow the red line.
 
     y_fit_summary(fit) -> fit.res
     fit.res$df -> df; fit.res$Est.txt -> Est.txt; fit.res$rr.txt -> rr.txt
@@ -161,14 +155,11 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 }
 
 
+
 #' @title Build a wide fitted-model table
-#' @description Returns one table row for a single fitted model. Each
-#' coefficient or categorical group forms a column, and R-squared is included
-#' as the final column.
+#' @description Builds a one-row coefficient table for a fitted model.
 #'
-#' @param fit A single fitted model accepted by [y_fit_summary()]. A model with
-#' several predictors is supported when `show = "est"`. For `show = "mse"`,
-#' the model must contain exactly one categorical predictor, such as `y ~ x`.
+#' @param fit A fitted model accepted by [y_fit_summary()].
 #' @param digits Number of decimal places.
 #' @param show `"est"` displays coefficient estimates with significance marks;
 #' `"mse"` displays observed group means and standard errors.
@@ -190,37 +181,29 @@ y_fit_msetable <- function(fit, digits = 2, show = c("est", "mse")){
       group_by(x) %>% reframe(mean = mean(y, na.rm = TRUE), se = sd(y, na.rm = TRUE)/sqrt(sum(!is.na(y)))) -> mse }
 
   if(show[1] == "mse"){
-	 data.frame(x = as.character(mse$x), value = paste0(formatC(mse$mean, format = "f", digits = digits), " ± ", formatC(mse$se, format = "f", digits = digits))) -> df_table
+	 data.frame(x = as.character(mse$x), value = paste0(formatC(mse$mean, format = "f", digits = digits), " \u00b1 ", formatC(mse$se, format = "f", digits = digits))) -> df_table
   } else {
     as.character(fit_res$Est.txt$p.sig) -> sig; sig[is.na(sig)] <- ""
     sub("^factor\\([^)]*\\)", "", fit_res$Est.txt$x) -> est_x
     paste0(formatC(fit_res$Est.txt$Estimate, format = "f", digits = digits), sig) %>% data.frame(x = est_x, value = .) -> est
     if(!is_categorical){est -> df_table} else{
       data.frame(x = as.character(mse$x), mean = mse$mean, se = mse$se) %>% dplyr::left_join(est, by = "x") %>%
-	      mutate(value = ifelse(is.na(value), paste0(formatC(mean, format = "f", digits = digits), " ± ", formatC(se, format = "f", digits = digits)), value)) -> df_table } }
+	      mutate(value = ifelse(is.na(value), paste0(formatC(mean, format = "f", digits = digits), " \u00b1 ", formatC(se, format = "f", digits = digits)), value)) -> df_table } }
 
+  paste0(names(fit_res$rr), " = ", formatC(unlist(fit_res$rr), format = "f", digits = digits), collapse = "; ") -> R2
   as.data.frame(as.list(setNames(df_table$value, df_table$x)), check.names = FALSE) %>%
-    mutate(R2 = paste0(fit_res$rr.txt[[1]], collapse = " ")) %>% return()
+    mutate(R2 = R2) %>% return()
 }
 
 
+
 #' @title Generate fitted values and confidence intervals
-#' @description Returns observed data with fitted values and 95% confidence
-#' intervals for supported models. By default, predictions use fixed effects
-#' only; `re_formula` controls whether random effects are retained.
+#' @description Adds fitted values and 95% confidence intervals to model data.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer`, `glmmTMB` or `brmsfit` model.
-#' @param newdata `NULL` uses the model data; a data frame supplies predictor
-#' values directly; a character value such as `"grid"` generates a balanced grid
-#' across the observed predictor ranges.
-#' @param re_formula Random-effect handling. `NA` gives population-level
-#' predictions, while `NULL` retains all random effects.
+#' @param newdata Model data, predictor values, or `"grid"` for a generated grid.
+#' @param re_formula `NA` excludes random effects; `NULL` includes them.
 #' @return A data frame containing fitted values and intervals.
-#' @details Automatic grids include all fixed-effect predictors. Numeric
-#' variables use evenly spaced values across their observed range, while
-#' categorical variables retain their observed levels. Up to two fixed-effect
-#' predictors use 100 numeric values each; with more predictors, the number of
-#' values per predictor is reduced to keep the grid near 10,000 combinations.
 #'
 #' @family fitting
 #' @export
@@ -242,67 +225,13 @@ y_fit_predict <- function(fit, newdata = NULL, re_formula = NA){
 
 
 
-#' @title Compare subsets of a fitted model
-#' @description Fits predictor subsets and ranks them by AICc or predictor
-#' p-values. A warning is issued when more than 255 candidate models are
-#' requested. output = "best_fit" returns only the selected model.
-#'
-#' @param fit A fitted `lm`, `lmer` or `glmer` model object.
-#' @param step Model-selection rule: AICc, p < 0.1, or p < 0.05.
-#' @param output Output mode; see the function description.
-#' @return The best model or a list of candidate-model results.
-#'
-#' @family fitting
-#' @export
-#'
-
-y_fit_step <- function(fit, step = "aicc", output = "all"){
-      # in output No.1, 2 is full_fit & best_fit
-      # step could be '0.1' or '0.05' to catch differ methods basing p-values of x;
-
-      all.vars(stats::formula(fit, fixed.only = T))[-1] -> vars.x
-      unlist(lapply(1:length(vars.x), \(k) combn(vars.x, k, simplify = FALSE)), recursive = FALSE) %>% c("00", .) -> comb_x
-
-        comb_x %>% imap(~{paste0('-', paste0(.x, collapse = '-'))}) %>%
-                   imap(~{paste0('stats::update(stats::formula(fit), .~. ', .x, ")")}) %>%
-                   imap(~{eval(parse(text = .x)) %>% as.formula()}) -> formula_all
-
-        suppressMessages(suppressWarnings(formula_all %>% imap(~{stats::update(fit, formula = .x)}))) -> fit_all
-
-        fit_all %>% imap(~{MuMIn::AICc(.x) %>% data.frame(AICc = .)}) %>% bind_rows() -> AICc_all
-        fit_all %>% imap(~{stats::formula(.x) %>% deparse1() %>% data.frame(formula = .)}) %>% bind_rows(.id = "fit.id") -> formula_all
-        fit_all %>% imap(~{MuMIn::r.squaredGLMM(.x) %>% head(1) %>% data.frame()}) %>% bind_rows() -> RR_all
-        fit_all %>% imap(~{anova(fit, .x) %>% data.frame() %>% select(Pr..Chisq.) %>% .[2,1] %>% data.frame(ANOVA.P = .)}) %>% bind_rows() -> ANOVA.P
-        fit_all %>% imap(~{summary(.x) %>% .[["coefficients"]] %>% data.frame() %>% rename_with(~ "p", matches("Pr")) %>% .[-1,]}) %>%
-          imap(~{cbind(summarise(.x, 'x.p_0.05' = sum(p > 0.05)), summarise(.x, 'x.p_0.1' = sum(p > 0.1)))}) %>% bind_rows() -> Number.x.p
-
-      # step_res: formula, R2m, R2c, AICc, ANOVA.Pr(>Chisq), number of x that p > 0.05 or 0.1
-      cbind(formula_all, RR_all, AICc_all, ANOVA.P, Number.x.p) %>% as_tibble() %>% mutate(across(R2m:ANOVA.P, ~round(., 2))) -> step_res
-
-      if(grepl("aicc", step)){step_res %>% arrange(AICc) -> step_res}                      # best_fit is the fit with min AICc
-      if(grepl(".1", step)){step_res %>% arrange(x.p_0.1, desc(R2m), AICc) -> step_res}    # best_fit is all p of x < 0.1, and take the max R2m
-      if(grepl(".05", step)){step_res %>% arrange(x.p_0.05, desc(R2m), AICc) -> step_res}  # best_fit is all p of x < 0.05, and take the max R2m
-
-      if(step_res[1, 'R2m'] == 0){2 -> id.best_fit; warning('\n0_o| best_fit is y ~ 1\n-----------------------\n')} else{1 -> id.best_fit}
-      step_res[id.best_fit, 'fit.id'] %>% as.numeric() %>% fit_all[[.]] -> best_fit
-
-      # all_res: row = 1 is full_fit & row = 2 is best_fit & include all model
-      rbind(step_res %>% dplyr::filter(fit.id == 1), step_res) %>% as_tibble() -> all_res
-      if (output == "best_fit") {best_fit %>% return()} else{list("best_fit" = best_fit,  "all_res" = all_res) %>% return()}
-    }
-
-
-
 #' @title Update a model formula while preserving random effects
-#' @description Updates a model formula with compact text while retaining the
-#' model's fixed-effect terms and random effects. Fixed-effect terms are ordered
-#' by their first appearance in `x.order`, and random effects are placed last.
+#' @description Updates a model formula and keeps its random effects.
 #'
 #' @param fit A fitted `lm`, `glm`, `lmer`, `glmer` or `glmmTMB` model.
 #' @param str Formula update text, such as `"+ x1 - x2"`.
-#' @param x.order Optional character vector giving term order. Defaults to the
-#' column order in the model data.
-#' @return An updated fitted model with one model fit.
+#' @param x.order Optional term order.
+#' @return An updated fitted model.
 #'
 #' @family fitting
 #' @export
@@ -330,48 +259,92 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
 
 
 
-#' @title Plot model-averaged coefficients
-#' @description Averages models within three AICc units and plots relative
-#' importance and coefficients. Models within three AICc units of the best
-#' model are averaged. The first plot shows relative importance; the second
-#' shows coefficients.
+#' @title Rank fixed-effect model subsets
+#' @description Ranks fixed-effect model subsets with [MuMIn::dredge()].
 #'
-#' @param fit A fitted model accepted by `MuMIn::dredge()`.
+#' @param fit A fitted model accepted by [MuMIn::dredge()], preferably fitted
+#' with `na.action = na.fail`.
+#' @param rank Ranking criterion accepted by [MuMIn::dredge()].
+#' @param top Number of ranked subsets, excluding the full model.
+#' @return A list with `best_fit` and a model table in `fit_rank`.
+#'
+#' @examples
+#' fit <- lm(mpg ~ wt * hp + disp, data = mtcars, na.action = na.fail)
+#' result <- y_fit_models_rank(fit, top = 5)
+#' result$fit_rank
+#'
+#' @family fitting
+#' @export
+#'
+
+y_fit_models_rank <- function(fit, rank = "AICc", top = 10){
+  # AIC comparisons require ML for mixed models; the returned best model is restored to REML.
+  is.reml <- inherits(fit, "merMod") && lme4::isREML(fit)
+  if(is.reml){stats::update(fit, REML = FALSE) -> fit.select} else{fit -> fit.select}
+  suppressMessages(MuMIn::dredge(fit.select, rank = rank)) -> selection
+
+  min(as.integer(top), nrow(selection)) -> n.top
+  MuMIn::get.models(selection, subset = seq_len(n.top)) -> top.models
+  top.models[[1]] -> best_fit; if(is.reml){stats::update(best_fit, REML = TRUE) -> best_fit}
+
+  c(list(fit.select), top.models) -> all.models
+  all.models %>% map(y_fit_summary) -> fit.summaries
+  all.models %>% map(~paste(deparse(stats::formula(.x)), collapse = "")) %>% unlist() %>% unname() -> formulas
+  fit.summaries %>% map("rr") %>% map(~{
+    if(all(c("Rm", "Rc") %in% names(.x))){data.frame(Rm = .x[["Rm"]], Rc = .x[["Rc"]])
+    } else{data.frame(R2 = .x[[1]])}
+  }) %>% bind_rows() -> RR
+
+  tibble::tibble(rank = c(0L, seq_len(n.top)), formula = formulas, RR,
+    AICc = vapply(all.models, MuMIn::AICc, numeric(1)),
+    AIC = vapply(all.models, stats::AIC, numeric(1)),
+    BIC = vapply(all.models, stats::BIC, numeric(1))) -> fit_rank
+
+  list("best_fit" = best_fit, "fit_rank" = fit_rank) %>% return()
+}
+
+
+
+#' @title Plot model-averaged coefficients
+#' @description Plots coefficients averaged across AICc models within
+#' `delta < 3`.
+#'
+#' @param fit A fitted model accepted by [MuMIn::dredge()].
 #' @param fig.name Optional data frame: input labels in column 1 and display
 #' labels in column 2.
-#' @return A named list containing two ggplot objects.
+#' @return A list with two ggplot objects: `sw` and `avg`.
 #'
 #' @family fitting
 #' @export
 #'
 
 y_fit_model_avg <- function(fit, fig.name = NULL){
-      # using MuMIn::model.avg to determine Model-averaged coefficients of delta-AICc < 3
-      # sw: sum of Akaike weights, indicating its relative importance across models with ΔAICc < 3.
+  MuMIn::dredge(fit, rank = "AICc") %>%
+    MuMIn::model.avg(., subset = delta < 3) %>% summary() -> m.avg_res
 
-      all.vars(stats::formula(fit, fixed.only = T))[-1] -> vars.x
-      MuMIn::dredge(fit, rank = 'AICc') %>% MuMIn::model.avg(., subset = delta < 3) %>% summary() -> m.avg_res
+  m.avg_res$coefmat.subset %>% data.frame() %>% rownames_to_column("x") %>% slice(-1) -> df.con.avg
+  m.avg_res$sw %>% data.frame(sw = .) %>% rownames_to_column("x") %>% merge(df.con.avg, by = "x") %>%
+    mutate(x = factor(x, levels = rev(names(m.avg_res$sw)))) %>% arrange(x) %>%
+    mutate(color = ifelse(Pr...z.. < .05, "red", "grey58")) -> df.p
 
-      m.avg_res$coefmat.subset %>% data.frame() %>% rownames_to_column('x') %>% slice(-1) -> df.con.avg
-      m.avg_res$sw %>% data.frame(sw = .) %>% rownames_to_column('x') %>% merge(df.con.avg, by = 'x') %>%
-        mutate(x = factor(x, levels = vars.x)) %>% arrange(x) %>% mutate(color = ifelse(Pr...z.. < .05, "red", "grey58"))-> df.p
+  if(!is.null(fig.name)){fig.name[match(df.p$x, fig.name[, 1]), 2] -> df.p$x}
+  factor(df.p$x, levels = rev(df.p$x)) -> df.p$x
 
-      if(!is.null(fig.name)){fig.name[match(df.p$x, fig.name[, 1]), 2] -> df.p$x}; factor(df.p$x, levels = rev(df.p$x)) -> df.p$x
+  ggplot(df.p, aes(x = sw, y = x)) + geom_col(width = .8, alpha = .6, fill = df.p$color) +
+    labs(x = "Relative importance (Sum of Akaike weights)", y = "") -> p.sw
+  ggplot(df.p, aes(x = Estimate, y = x)) +
+    geom_vline(xintercept = 0, linetype = "dotted", linewidth = .5) +
+    geom_pointrange(aes(xmin = Estimate - Adjusted.SE, xmax = Estimate + Adjusted.SE),
+      linewidth = .5, color = df.p$color, shape = 15) +
+    labs(x = "Model-averaged coefficients (conditional average \u00b1 SE)", y = "") -> p.avg
 
-      ggplot(df.p, aes(x = sw, y = x)) + geom_col(width = .8, alpha = .6, fill = df.p$color) + labs(x = 'Relative importance (Sum of Akaike weights)', y = '') -> p.sw
-
-      ggplot(df.p, aes(x = Estimate, y = x)) + geom_vline(xintercept = 0, linetype = "dotted", size = .5) +
-        geom_pointrange(aes(xmin = Estimate - Adjusted.SE, xmax = Estimate + Adjusted.SE), size = .5, color = df.p$color, pch = 15) +
-        labs(x = 'Model-averaged coefficients (conditional average +/- SE)', y = '') -> p.avg
-
-      list(p.sw, p.avg) %>% map(~.x + theme_y() + theme(axis.text.y = element_text(size = 9))) %>% set_names(c('sw', 'avg')) %>% return()
-    }
+  list(sw = p.sw + theme_y(), avg = p.avg + theme_y()) %>% return()
+}
 
 
 
 #' @title Plot random-forest variable importance
 #' @description Runs a permuted random forest and plots variable importance.
-#' Permutation importance controls the displayed significance marks.
 #'
 #' @param df Data frame containing the response and all predictor columns.
 #' @param x Character vector of predictor column names.
@@ -403,7 +376,7 @@ y_random_forest_plot <- function(df, x = "", y = "", x.group = NULL, sort = FALS
     randomForest::randomForest(RF_formula, data = df_RF, ntree = 999, importance = TRUE) %>% capture.output() %>% data.frame() %>% .[9, 1] -> RR
 
     RF_fit %>% rfPermute::importance() %>% round(3) %>% data.frame() %>% rownames_to_column("name_x") %>%
-      mutate(p.sig = cut(X.IncMSE.pval, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "*", "")) ) %>%
+      mutate(p.sig = cut(X.IncMSE.pval, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "*", " ")) ) %>%
       mutate(name_x = factor(name_x, levels = x)) %>% arrange(name_x) -> RF.result; RF.result -> df_p
 
     if(sort & is.numeric(n.top)){df_p %>% arrange(desc(X.IncMSE)) %>% slice(1:n.top) -> df_p}

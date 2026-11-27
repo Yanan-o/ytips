@@ -19,9 +19,7 @@ A named list with \code{df_p}, containing the relative explanatory power
 and labels, and \code{plot}, a ggplot object.
 }
 \description{
-Compares the fixed-effect variation explained for two response
-components and reports their relative explanatory power. The components are
-fitted with the same fixed- and random-effect structure as \code{fit}.
+Compares explanatory variation for two response components.
 }
 \seealso{
 Other plotting:

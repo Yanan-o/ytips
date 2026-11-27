@@ -18,7 +18,7 @@ y_psem_formula(
 \item{fit}{A fitted \code{lmer} model, or a list whose first element is a fitted
 \code{lmer} model.}
 
-\item{sem.f}{Formula-building mode, optionally including step or full .}
+\item{sem.f}{Formula-building mode.}
 
 \item{sem.data}{Data used to fit the SEM.}
 
@@ -28,16 +28,13 @@ y_psem_formula(
 
 \item{x.level3}{Predictors in the third path level.}
 
-\item{corr}{Whether to include correlations among predictors in the same
-level.}
+\item{corr}{Whether to include within-level correlations.}
 }
 \value{
 A list containing a formula string and model data.
 }
 \description{
-Builds a piecewiseSEM formula from one or more fitted models.
-The first model defines the main response. Additional models may be
-supplied as a list. Predictor levels control the order of indirect paths.
+Builds a piecewiseSEM formula from fitted models.
 }
 \examples{
 \dontrun{
@@ -49,6 +46,7 @@ supplied as a list. Predictor levels control the order of indirect paths.
 Other piecewiseSEM:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
-\code{\link[=y_psem_step]{y_psem_step()}}
+\code{\link[=y_psem_step]{y_psem_step()}},
+\code{\link[=yy_fit_step]{yy_fit_step()}}
 }
 \concept{piecewiseSEM}

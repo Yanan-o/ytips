@@ -4,12 +4,10 @@
 \alias{y_fit_msetable}
 \title{Build a wide fitted-model table}
 \usage{
-y_fit_msetable(fit, digits = 3, show = c("est", "mse"))
+y_fit_msetable(fit, digits = 2, show = c("est", "mse"))
 }
 \arguments{
-\item{fit}{A single fitted model accepted by \code{\link[=y_fit_summary]{y_fit_summary()}}. A model with
-several predictors is supported when \code{show = "est"}. For \code{show = "mse"},
-the model must contain exactly one categorical predictor, such as \code{y ~ x}.}
+\item{fit}{A fitted model accepted by \code{\link[=y_fit_summary]{y_fit_summary()}}.}
 
 \item{digits}{Number of decimal places.}
 
@@ -20,17 +18,15 @@ the model must contain exactly one categorical predictor, such as \code{y ~ x}.}
 A one-row wide data frame.
 }
 \description{
-Returns one table row for a single fitted model. Each
-coefficient or categorical group forms a column, and R-squared is included
-as the final column.
+Builds a one-row coefficient table for a fitted model.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},

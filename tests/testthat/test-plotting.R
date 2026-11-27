@@ -37,6 +37,18 @@ test_that("y_corrplot handles negative-only limits", {
   p <- y_corrplot(df, fill.lim = c(-1, -0.2))
   built <- ggplot2::ggplot_build(p)
   expect_false(anyNA(built$data[[2]]$size))
+  expect_gt(length(unique(built$data[[2]]$size)), 1)
+})
+
+test_that("y_corrplot handles values at the default scale boundary", {
+  df <- data.frame(
+    name_x = c("a", "b"),
+    name_y = c("b", "a"),
+    value = c(0.1, 0.7)
+  )
+
+  built <- ggplot2::ggplot_build(y_corrplot(df))
+  expect_false(anyNA(built$data[[2]]$size))
 })
 
 test_that("partial plots support lm and lmer model options", {

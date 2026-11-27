@@ -42,11 +42,7 @@ yy_network_plot(
 A list containing node and edge tables, invisibly.
 }
 \description{
-Draws and annotates a module-aware network. Supports one or
-more c.group clusters arranged around the graph. Node colors and sizes can
-be supplied through v.group and v.size. Supports one or more c.group
-clusters arranged around the graph. Node colors and sizes can be supplied
-through v.group and v.size.
+Draws an annotated co-occurrence network.
 }
 \seealso{
 Other network:

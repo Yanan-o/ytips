@@ -37,7 +37,7 @@ y_nmds_plot(
 A ggplot object.
 }
 \description{
-Runs NMDS and delegates plotting to yy_ord_plot.
+Draws an NMDS ordination.
 }
 \seealso{
 Other ordination:

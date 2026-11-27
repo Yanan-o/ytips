@@ -18,10 +18,9 @@ y_fit_estplot(
 \item{fig.name}{Optional data frame: input labels in column 1 and display
 labels in column 2.}
 
-\item{show.random.forest}{Whether to overlay random-forest variable
-importance. Requires \code{rfPermute} and \code{randomForest}.}
+\item{show.random.forest}{Whether to add random-forest variable importance.}
 
-\item{rr.inc}{Numeric controls for label spacing.}
+\item{rr.inc}{R-squared label spacing.}
 
 \item{diagnostics}{Whether to draw model residual diagnostics.}
 }
@@ -29,16 +28,15 @@ importance. Requires \code{rfPermute} and \code{randomForest}.}
 A ggplot object.
 }
 \description{
-Draws fixed-effect estimates and confidence intervals. Residual
-diagnostics and random-forest variable importance can be added.
+Plots fixed-effect estimates and confidence intervals.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},

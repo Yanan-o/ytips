@@ -40,10 +40,7 @@ y_fit_classplot(
 A ggplot object.
 }
 \description{
-Combines fitted predictions with class-level plotting. The
-fitted model should contain one categorical predictor. Significance letters
-or brackets are added according to pairwise. Significance letters or
-brackets are added according to pairwise.
+Plots fitted-model predictions by group.
 }
 \seealso{
 Other plotting:

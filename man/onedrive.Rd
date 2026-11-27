@@ -15,10 +15,7 @@ onedrive(x, contents = FALSE)
 All matching paths, or folder contents when \code{contents = TRUE}.
 }
 \description{
-Searches detected OneDrive roots recursively for names ending
-with \code{x}. Roots come from the OneDrive environment variables, the standard
-\verb{~/OneDrive*} locations and macOS \verb{CloudStorage/OneDrive*} folders. Paths
-use \code{/} as the separator. The function does not search the full computer.
+Searches detected OneDrive folders for matching paths.
 }
 \examples{
 \dontrun{

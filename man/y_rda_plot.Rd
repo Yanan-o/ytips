@@ -31,7 +31,7 @@ y_rda_plot(
 A ggplot object.
 }
 \description{
-Runs RDA and delegates plotting to yy_ord_plot.
+Draws an RDA ordination.
 }
 \examples{
 \dontrun{

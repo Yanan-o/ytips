@@ -4,7 +4,7 @@
 \alias{y_fit_partial_plot}
 \title{Plot a partial residual relationship from a fitted model}
 \usage{
-y_fit_partial_plot(fit, x.fixed = "", ...)
+y_fit_partial_plot(fit, x.fixed = "", fig.name = NULL, ...)
 }
 \arguments{
 \item{fit}{A fitted \code{lm} or \code{lmer} model with at least one numeric
@@ -12,6 +12,9 @@ fixed-effect predictor.}
 
 \item{x.fixed}{A single character string naming the numeric fixed-effect
 predictor whose partial relationship is plotted.}
+
+\item{fig.name}{Optional two-column data frame: input labels in column 1 and
+display labels in column 2. Applies to the response and \code{x.fixed}.}
 
 \item{...}{Additional arguments passed to \code{\link[=y_fit_linesplot]{y_fit_linesplot()}}, such as
 \code{show.p}, \code{show.se}, \code{point.size}, or \code{line.size}.}
@@ -21,10 +24,7 @@ A named list with \code{df_resid}, the model data and residual columns,
 and \code{plot}, a ggplot object.
 }
 \description{
-Residualizes the response and one focal predictor against all
-other fixed-effect predictors in \code{fit}, then plots their residual
-relationship. Random effects in \code{fit} are retained when the component
-models are fitted.
+Plots a partial residual relationship from a fitted model.
 }
 \seealso{
 Other plotting:

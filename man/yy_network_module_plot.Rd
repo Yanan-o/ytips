@@ -14,7 +14,7 @@ yy_network_module_plot(
 )
 }
 \arguments{
-\item{otu.g}{Network node table returned by y_ps_network() .}
+\item{otu.g}{Network node table returned by \code{\link[=y_ps_network]{y_ps_network()}}.}
 
 \item{group}{Grouping variable, column name, or grouping table.}
 

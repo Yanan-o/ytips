@@ -6,10 +6,11 @@ test_that("y_fit_summary returns model information", {
   result <- y_fit_summary(fit)
 
   expect_type(result, "list")
-  expect_named(result, c("df", "name_y", "name_x", "Est.txt", "rr.txt"))
+  expect_named(result, c("df", "name_y", "name_x", "Est.txt", "rr", "rr.txt"))
   expect_identical(result$name_y, "mpg")
   expect_identical(result$name_x, c("wt", "hp"))
   expect_equal(nrow(result$Est.txt), 2)
+  expect_equal(result$rr$R2, summary(fit)$r.squared)
   expect_s3_class(y_fit_estplot(fit, diagnostics = FALSE), "ggplot")
 })
 
@@ -154,12 +155,90 @@ test_that("y_fit_update orders fixed terms before random effects", {
   )
 })
 
+test_that("y_fit_models_rank summarises the top-ranked models", {
+  withr::local_options(list(na.action = "na.fail"))
+  fit <- stats::lm(mpg ~ wt * hp + disp, data = mtcars)
+  result <- y_fit_models_rank(fit, top = 3)
+
+  expect_named(result, c("best_fit", "fit_rank"))
+  expect_named(
+    result$fit_rank,
+    c("rank", "formula", "R2", "AICc", "AIC", "BIC")
+  )
+  expect_equal(result$fit_rank$rank, 0:3)
+  expect_equal(nrow(result$fit_rank), 4)
+  expect_equal(result$fit_rank$formula[1], "mpg ~ wt * hp + disp")
+  expect_type(result$fit_rank$R2, "double")
+  expect_s3_class(result$best_fit, "lm")
+  expect_true(any(grepl(":", result$fit_rank$formula)))
+  expect_false("y_fit_rank_avg" %in% getNamespaceExports("ytips"))
+  expect_false("y_fit_rank" %in% getNamespaceExports("ytips"))
+  expect_false("y_fit_models" %in% getNamespaceExports("ytips"))
+  expect_true("y_fit_models_rank" %in% getNamespaceExports("ytips"))
+  expect_true("y_fit_model_avg" %in% getNamespaceExports("ytips"))
+  expect_false("y_fit_step" %in% getNamespaceExports("ytips"))
+})
+
+test_that("y_fit_models_rank supports MuMIn rank functions", {
+  withr::local_options(list(na.action = "na.fail"))
+  fit <- stats::lm(mpg ~ wt + hp + disp + qsec, data = mtcars)
+  default_result <- y_fit_models_rank(fit)
+  bic_result <- y_fit_models_rank(fit, rank = "BIC", top = 16)
+  function_result <- y_fit_models_rank(fit, rank = MuMIn::AICc, top = 3)
+
+  expect_equal(nrow(default_result$fit_rank), 11)
+  expect_equal(nrow(bic_result$fit_rank), 17)
+  expect_equal(nrow(function_result$fit_rank), 4)
+  expect_true(all(diff(bic_result$fit_rank$BIC[-1]) >= 0))
+})
+
+test_that("y_fit_model_avg returns the averaged model plots", {
+  withr::local_options(list(na.action = "na.fail"))
+  fit <- stats::lm(mpg ~ wt * hp + disp, data = mtcars)
+  result <- y_fit_model_avg(fit)
+
+  expect_named(result, c("sw", "avg"))
+  expect_s3_class(result$sw, "ggplot")
+  expect_s3_class(result$avg, "ggplot")
+})
+
+test_that("y_fit_models_rank handles mixed models", {
+  withr::local_options(list(na.action = "na.fail"))
+  fit <- lmerTest::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  )
+  rank_result <- y_fit_models_rank(fit, top = 2)
+
+  expect_equal(nrow(rank_result$fit_rank), 3)
+  expect_named(
+    rank_result$fit_rank,
+    c("rank", "formula", "Rm", "Rc", "AICc", "AIC", "BIC")
+  )
+  expect_true(lme4::isREML(rank_result$best_fit))
+  expect_false(anyNA(rank_result$fit_rank$Rm))
+  expect_false(anyNA(rank_result$fit_rank$Rc))
+})
+
 test_that("y_fit_summary supports plain lme4 models", {
   fit <- lme4::lmer(Reaction ~ Days + (Days | Subject), data = lme4::sleepstudy)
   result <- y_fit_summary(fit)
 
   expect_true("p" %in% names(result$Est.txt))
   expect_type(result, "list")
+  expect_named(result$rr, c("Rm", "Rc"))
+})
+
+test_that("y_fit_msetable returns readable R-squared text", {
+  lm_table <- y_fit_msetable(stats::lm(mpg ~ wt + hp, data = mtcars))
+  expect_match(lm_table$R2, "^R2 = ")
+
+  lmer_table <- y_fit_msetable(lme4::lmer(
+    Reaction ~ Days + (1 | Subject),
+    data = lme4::sleepstudy
+  ))
+  expect_match(lmer_table$R2, "^Rm = ")
+  expect_match(lmer_table$R2, "; Rc = ")
 })
 
 test_that("y_fit_estplot draws the random-forest overlay", {

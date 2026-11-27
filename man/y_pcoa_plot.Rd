@@ -37,7 +37,7 @@ y_pcoa_plot(
 A ggplot object.
 }
 \description{
-Runs PCoA and delegates plotting to yy_ord_plot.
+Draws a PCoA ordination.
 }
 \examples{
 \dontrun{

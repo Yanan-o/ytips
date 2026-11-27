@@ -56,15 +56,11 @@ yy_pkg_available <- function(pkg){
 
 
 #' @title Check and report missing packages
-#' @description Checks whether required packages are installed. In an
-#' interactive R session, missing packages trigger a prompt to install them or
-#' stop the current call. Non-interactive sessions stop with the installation
-#' command.
+#' @description Checks required packages and reports missing ones.
 #'
 #' @param pkg Package name or character vector of package names.
 #' @param install.hint Optional installation command.
-#' @param ask Whether to ask before installing. If `NULL`, asks in RStudio or
-#' an interactive R session, but not during automated tests.
+#' @param ask Whether to ask before installing.
 #' @return Invisibly returns `TRUE` when all packages are available.
 #' @family utilities
 #' @keywords internal

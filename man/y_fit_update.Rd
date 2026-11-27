@@ -11,25 +11,22 @@ y_fit_update(fit, str = "", x.order = NULL)
 
 \item{str}{Formula update text, such as \code{"+ x1 - x2"}.}
 
-\item{x.order}{Optional character vector giving term order. Defaults to the
-column order in the model data.}
+\item{x.order}{Optional term order.}
 }
 \value{
-An updated fitted model with one model fit.
+An updated fitted model.
 }
 \description{
-Updates a model formula with compact text while retaining the
-model's fixed-effect terms and random effects. Fixed-effect terms are ordered
-by their first appearance in \code{x.order}, and random effects are placed last.
+Updates a model formula and keeps its random effects.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},
 \code{\link[=y_random_forest_plot]{y_random_forest_plot()}}

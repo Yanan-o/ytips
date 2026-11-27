@@ -11,15 +11,11 @@ y_fit_summary(fit)
 model object.}
 }
 \value{
-A list containing the model data (\code{df}), response name (\code{name_y}),
-fixed-effect predictor names (\code{name_x}), coefficient table (\code{Est.txt}) and
-formatted R-squared values (\code{rr.txt}).
+A list with \code{df}, \code{name_y}, \code{name_x}, \code{Est.txt}, numeric R-squared
+values in \code{rr}, and formatted labels in \code{rr.txt}.
 }
 \description{
-Extracts model data, response and fixed-effect predictor names,
-fixed-effect coefficients, and variance explained. Supports \code{lm}, \code{glm},
-\code{lmer}, \code{glmer}, \code{glmmTMB} and \code{brmsfit} models. Use models fitted with
-\code{lmerTest::lmer()} to retain mixed-model p-values.
+Returns model data, fixed-effect estimates and R-squared values.
 }
 \examples{
 fit <- lm(mpg ~ wt + hp, data = mtcars)
@@ -31,9 +27,9 @@ Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},
 \code{\link[=y_random_forest_plot]{y_random_forest_plot()}}

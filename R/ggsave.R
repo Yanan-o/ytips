@@ -49,23 +49,21 @@ no_axis_x_title <- ggplot2::theme(axis.title.x = ggplot2::element_blank())
 
 
 #' @title Save or print a ggplot or patchwork figure
-#' @description Flexible wrapper around ggplot2 and patchwork for single and
-#' multi-panel figures.
+#' @description Saves or prints ggplot and patchwork figures.
 #'
 #' @param p A ggplot object, or a list of ggplot objects.
 #' @param file Output path without the `.tiff` extension.
-#' @param nrow Number of rows; height defaults to three inches per row.
+#' @param nrow Number of rows.
 #' @param width Figure width in inches.
 #' @param height Figure height in inches.
 #' @param spacer Integer positions at which to insert patchwork spacers.
 #' @param xlim,ylim Optional shared axis limits.
 #' @param x.axis,y.axis Whether to retain x/y axis text and ticks.
 #' @param x.lab,y.lab Whether to retain x/y axis titles.
-#' @param lab.collect Value passed to `patchwork::wrap_plots(axis_titles = )`.
+#' @param lab.collect Axis-title collection option.
 #' @param title.p Optional panel titles.
 #' @param save Logical; save using `file` when `TRUE`, otherwise print the plot.
-#' @param tag.levels Optional label sequence passed to
-#' `patchwork::plot_annotation()`, such as `"a"`.
+#' @param tag.levels Optional panel labels, such as `"a"`.
 #' @param dpi Output resolution in dots per inch. Defaults to 300.
 #' @param show.legend One of `"collect"`, `"last"`, `"no"`, `"all"`, or "keep"`.
 #' @param legend.position Legend position.

@@ -21,14 +21,13 @@ y_beta_simper(
 
 \item{trt}{Treatment grouping vector.}
 
-\item{pairs.id}{Optional sample-pair identifiers separated by ' vs ' .}
+\item{pairs.id}{Optional sample-pair identifiers separated by \code{" vs "}.}
 
 \item{cols}{Optional color values.}
 
 \item{ylim}{Upper y-axis limit.}
 
-\item{show.contri}{Cumulative contribution retained before grouping the
-remainder as Others .}
+\item{show.contri}{Cumulative contribution retained before grouping Others.}
 
 \item{show.adonis}{Whether to add PERMANOVA results to the plot.}
 
@@ -42,8 +41,6 @@ A named list with \code{simper.res}, \code{simper.res.mean}, and \code{plot}.
 }
 \description{
 Calculates species contributions to Bray-Curtis dissimilarity.
-Species contributions are aggregated by sample pair and the remaining
-contributions are grouped as Others.
 }
 \seealso{
 Other ordination:

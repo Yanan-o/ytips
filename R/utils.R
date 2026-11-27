@@ -1,8 +1,5 @@
 #' @title Find matching paths in OneDrive
-#' @description Searches detected OneDrive roots recursively for names ending
-#' with `x`. Roots come from the OneDrive environment variables, the standard
-#' `~/OneDrive*` locations and macOS `CloudStorage/OneDrive*` folders. Paths
-#' use `/` as the separator. The function does not search the full computer.
+#' @description Searches detected OneDrive folders for matching paths.
 #'
 #' @param x File or folder name, or a path suffix using `/`.
 #' @param contents Whether matching folders return their first-level contents.

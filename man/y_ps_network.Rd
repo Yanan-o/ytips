@@ -77,9 +77,6 @@ Zi-Pi results.
 }
 \description{
 Builds a network and returns graph, module and Zi-Pi results.
-Builds the igraph object, calculates network properties, draws the network
-and returns module and Zi-Pi information. network, and returns module and
-Zi-Pi information.
 }
 \examples{
 \dontrun{

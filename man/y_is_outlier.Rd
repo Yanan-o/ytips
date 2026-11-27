@@ -9,28 +9,26 @@ y_is_outlier(x, multiplier = 3, action = c("flag", "na", "winsorize"))
 \arguments{
 \item{x}{Numeric vector.}
 
-\item{multiplier}{Numeric multiplier for the interquartile range.}
+\item{multiplier}{Interquartile-range multiplier.}
 
 \item{action}{\code{"flag"} returns a logical vector identifying outliers,
 \code{"na"} replaces outliers with \code{NA}, and \code{"winsorize"} replaces outliers with
 the nearest boundary.}
 }
 \value{
-A logical vector for \code{"flag"}, otherwise a numeric vector with the
-same length as \code{x}.
+A logical or numeric vector, depending on \code{action}.
 }
 \description{
-Flags observations outside the interval defined by the first
-and third quartiles plus \code{multiplier} times the interquartile range.
+Identifies values outside the interquartile range.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
 \code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_random_forest_plot]{y_random_forest_plot()}}

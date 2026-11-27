@@ -11,16 +11,14 @@ y_beta_part(spe, trt, pairs.id = NULL)
 
 \item{trt}{Treatment grouping vector.}
 
-\item{pairs.id}{Optional sample-pair identifiers separated by ' vs ' .}
+\item{pairs.id}{Optional sample-pair identifiers separated by \code{" vs "}.}
 }
 \value{
 A named list with \code{beta_part.res}, the pairwise diversity
 components, and \code{plot}, a named list of two ggplot objects.
 }
 \description{
-Partitions Sorensen and Bray-Curtis beta diversity. Sorensen
-dissimilarity is split into turnover and nestedness. Bray-Curtis
-dissimilarity is split into balanced variation and gradient.
+Partitions Sorensen and Bray-Curtis beta diversity.
 }
 \examples{
 \dontrun{

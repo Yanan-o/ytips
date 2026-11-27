@@ -30,9 +30,7 @@ y_rdacca_hp(
 A list containing individual and grouped contributions.
 }
 \description{
-Calculates individual and grouped environmental contributions.
-Calculates individual environmental contributions and, optionally, the
-contribution of predefined variable groups.
+Calculates environmental contributions.
 }
 \examples{
 \dontrun{

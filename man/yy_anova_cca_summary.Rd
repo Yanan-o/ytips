@@ -13,8 +13,7 @@ yy_anova_cca_summary(model.ord)
 A list containing formatted test labels and arrow colors.
 }
 \description{
-Formats global and marginal tests for a constrained ordination
-model.
+Formats constrained-ordination tests.
 }
 \seealso{
 Other ordination:

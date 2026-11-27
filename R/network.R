@@ -24,8 +24,7 @@
 
 
 #' @title Build a phyloseq object from tabular data
-#' @description Creates a phyloseq object from abundance, sample and taxonomy
-#' tables.
+#' @description Converts abundance, sample and taxonomy tables to phyloseq.
 #'
 #' @param otu.df Abundance table whose first column contains taxon identifiers.
 #' @param sample.df Sample-data table whose first column contains sample
@@ -63,10 +62,7 @@ y_ps <- function(otu.df, sample.df, taxa.df = NULL, rarefy = FALSE){
 
 
 #' @title Filter and normalise a phyloseq object
-#' @description Removes empty or constant taxa and applies abundance filters.
-#' Removes empty samples and taxa before applying the abundance and prevalence
-#' filters. prune = FALSE retains constant taxa. prevalence filters. prune =
-#' FALSE retains constant taxa.
+#' @description Filters and normalises phyloseq data.
 #'
 #' @param ps A phyloseq object.
 #' @param filter.n Keep the top N OTUs by total abundance when nonzero.
@@ -183,9 +179,7 @@ y_ps_group <- function(ps, group = "", method = 'r.abun', max.group = 8, rank = 
 #' @param rank Whether to rank taxa or groups.
 #' @param pairwise Whether to perform all pairwise comparisons.
 #' @param p.adjust P-value adjustment method.
-#' @param fit.m Model expression used to test group differences. The default
-#' uses a random intercept for a column named `block`; override it for other
-#' random-effect or fixed-effect structures.
+#' @param fit.m Model expression used to test group differences.
 #' @return A ggplot object.
 #'
 #' @family network
@@ -221,7 +215,7 @@ y_ps_bar <- function(ps, trt = "", group = "", method = c('abun', 'r.abun', 'ric
        rcompanion::cldList(p.value ~ contrast, reversed = FALSE, data = .) %>% mutate(p.sig = Letter, x = Group) -> est.p;
        if(length(unique(est.p$p.sig)) == 1){' ' -> est.p$p.sig} } else{
       emmeans::contrast(emm,  method = "trt.vs.ctrl", adjust = p.adjust) %>% as.data.frame() %>%
-      mutate(p.sig = ifelse(p.value < .01, "**", ifelse(p.value < .05, '*', " ")), x = gsub(' -.*', '',contrast)) -> est.p }
+      mutate(p.sig = ifelse(p.value < .01, "**", ifelse(p.value < .05, "*", " ")), x = gsub(' -.*', '',contrast)) -> est.p }
 
     merge(data.frame(emm), est.p[c('x', 'p.sig')], by = 'x', all.x = T) }) %>% bind_rows(.id ='group') %>%
     mutate(x = gsub('x', '', x), p.sig = ifelse(is.na(p.sig), ' ',p.sig)) %>% select(group, x, p.sig) -> gg.p.sig
@@ -240,9 +234,6 @@ y_ps_bar <- function(ps, trt = "", group = "", method = c('abun', 'r.abun', 'ric
 
 #' @title Build and display a co-occurrence network
 #' @description Builds a network and returns graph, module and Zi-Pi results.
-#' Builds the igraph object, calculates network properties, draws the network
-#' and returns module and Zi-Pi information. network, and returns module and
-#' Zi-Pi information.
 #'
 #' @param ps A phyloseq object.
 #' @param r.threshold Absolute correlation threshold.
@@ -327,8 +318,6 @@ y_ps_network <- function(ps, r.threshold = 0.7, p.threshold = 0.05, r.method = "
 
 #' @title Build an igraph network from phyloseq data
 #' @description Builds a correlation or SpiecEasi network as an igraph object.
-#' Uses either pairwise correlations or SpiecEasi to build the network.
-#' P-values can be adjusted or estimated by taxon shuffling.
 #'
 #' @param ps A phyloseq object.
 #' @param r.threshold Absolute correlation threshold.
@@ -400,11 +389,7 @@ y_ps_igraph <- function(ps, r.threshold = 0.7, p.threshold = 0.05, r.method = 's
 
 
 #' @title Draw a grouped co-occurrence network
-#' @description Draws and annotates a module-aware network. Supports one or
-#' more c.group clusters arranged around the graph. Node colors and sizes can
-#' be supplied through v.group and v.size. Supports one or more c.group
-#' clusters arranged around the graph. Node colors and sizes can be supplied
-#' through v.group and v.size.
+#' @description Draws an annotated co-occurrence network.
 #'
 #' @param igraph An igraph network object.
 #' @param c.group Optional cross-kingdom or higher-level grouping table.
@@ -685,7 +670,7 @@ yy_network_properties <- function(igraph, m.gamma = 0, n.hub = FALSE){
 #' @title Plot module composition
 #' @description Plots module composition with radial stacked bars.
 #'
-#' @param otu.g Network node table returned by y_ps_network() .
+#' @param otu.g Network node table returned by [y_ps_network()].
 #' @param group Grouping variable, column name, or grouping table.
 #' @param output Output mode; see the function description.
 #' @param v.cols Node-group colors.

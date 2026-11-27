@@ -26,4 +26,7 @@ test_that("piecewiseSEM formula and direct fit paths work", {
     y_psem_boot(formula, nrep = 0, output = "sem.fit")
   )
   expect_s3_class(sem.fit, "psem")
+
+  selected <- suppressWarnings(ytips:::yy_fit_step(fit, step = "step_aicc", output = "best_fit"))
+  expect_true(inherits(selected, "merMod"))
 })

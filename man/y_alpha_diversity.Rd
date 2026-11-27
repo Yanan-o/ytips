@@ -13,8 +13,7 @@ y_alpha_diversity(spe)
 A data frame of alpha-diversity metrics.
 }
 \description{
-Calculates abundance, richness, Shannon, Simpson and Pielou
-metrics.
+Calculates common alpha-diversity metrics.
 }
 \seealso{
 Other ordination:

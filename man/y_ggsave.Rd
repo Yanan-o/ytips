@@ -32,7 +32,7 @@ y_ggsave(
 
 \item{file}{Output path without the \code{.tiff} extension.}
 
-\item{nrow}{Number of rows; height defaults to three inches per row.}
+\item{nrow}{Number of rows.}
 
 \item{width}{Figure width in inches.}
 
@@ -46,14 +46,13 @@ y_ggsave(
 
 \item{x.lab, y.lab}{Whether to retain x/y axis titles.}
 
-\item{lab.collect}{Value passed to \code{patchwork::wrap_plots(axis_titles = )}.}
+\item{lab.collect}{Axis-title collection option.}
 
 \item{title.p}{Optional panel titles.}
 
 \item{save}{Logical; save using \code{file} when \code{TRUE}, otherwise print the plot.}
 
-\item{tag.levels}{Optional label sequence passed to
-\code{patchwork::plot_annotation()}, such as \code{"a"}.}
+\item{tag.levels}{Optional panel labels, such as \code{"a"}.}
 
 \item{dpi}{Output resolution in dots per inch. Defaults to 300.}
 
@@ -67,8 +66,7 @@ y_ggsave(
 The output path invisibly when saving; otherwise the printed plot.
 }
 \description{
-Flexible wrapper around ggplot2 and patchwork for single and
-multi-panel figures.
+Saves or prints ggplot and patchwork figures.
 }
 \examples{
 library(ggplot2)

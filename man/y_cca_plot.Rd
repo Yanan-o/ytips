@@ -31,7 +31,7 @@ y_cca_plot(
 A ggplot object.
 }
 \description{
-Runs CCA and delegates plotting to yy_ord_plot.
+Draws a CCA ordination.
 }
 \seealso{
 Other ordination:

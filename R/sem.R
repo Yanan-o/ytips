@@ -1,17 +1,61 @@
+#' @title Select fixed-effect subsets for piecewiseSEM
+#' @description Selects fixed-effect subsets for piecewiseSEM.
+#'
+#' @param fit A fitted `lm`, `lmer` or `glmer` model object.
+#' @param step Selection rule: `"aicc"`, `".1"`, or `".05"`.
+#' @param output `"best_fit"` returns the selected model; other values return
+#' all candidates.
+#' @return A fitted model when `output = "best_fit"`; otherwise a list with
+#' `best_fit` and `all_res`.
+#'
+#' @family piecewiseSEM
+#' @keywords internal
+#'
+
+yy_fit_step <- function(fit, step = "aicc", output = "all"){
+  all.vars(stats::formula(fit, fixed.only = TRUE))[-1] -> vars.x
+  unlist(lapply(seq_along(vars.x), \(k) combn(vars.x, k, simplify = FALSE)), recursive = FALSE) %>% c("00", .) -> comb_x
+
+  comb_x %>% imap(~{paste0('-', paste0(.x, collapse = '-'))}) %>%
+    imap(~{paste0('stats::update(stats::formula(fit), .~. ', .x, ")")}) %>%
+    imap(~{eval(parse(text = .x)) %>% as.formula()}) -> formula_all
+  suppressMessages(suppressWarnings(formula_all %>% imap(~{stats::update(fit, formula = .x)}))) -> fit_all
+
+  fit_all %>% imap(~{MuMIn::AICc(.x) %>% data.frame(AICc = .)}) %>% bind_rows() -> AICc_all
+  fit_all %>% imap(~{stats::formula(.x) %>% deparse1() %>% data.frame(formula = .)}) %>% bind_rows(.id = "fit.id") -> formula_all
+  fit_all %>% imap(~{MuMIn::r.squaredGLMM(.x) %>% head(1) %>% data.frame()}) %>% bind_rows() -> RR_all
+  fit_all %>% imap(~{anova(fit, .x) %>% data.frame() %>% select(matches("^Pr")) %>% .[2, 1] %>% data.frame(ANOVA.P = .)}) %>% bind_rows() -> ANOVA.P
+  fit_all %>% imap(~{summary(.x) %>% .[["coefficients"]] %>% data.frame() %>% rename_with(~ "p", matches("Pr")) %>% .[-1, ]}) %>%
+    imap(~{cbind(summarise(.x, 'x.p_0.05' = sum(p > 0.05)), summarise(.x, 'x.p_0.1' = sum(p > 0.1)))}) %>% bind_rows() -> Number.x.p
+
+  cbind(formula_all, RR_all, AICc_all, ANOVA.P, Number.x.p) %>% as_tibble() %>%
+    mutate(across(R2m:ANOVA.P, ~round(., 2))) -> step_res
+
+  if(grepl("aicc", step)){step_res %>% arrange(AICc) -> step_res}
+  if(grepl(".1", step, fixed = TRUE)){step_res %>% arrange(x.p_0.1, desc(R2m), AICc) -> step_res}
+  if(grepl(".05", step, fixed = TRUE)){step_res %>% arrange(x.p_0.05, desc(R2m), AICc) -> step_res}
+
+  if(step_res[1, 'R2m'] == 0){2 -> id.best_fit; warning('\n0_o| best_fit is y ~ 1\n-----------------------\n')
+  } else{1 -> id.best_fit}
+  step_res[id.best_fit, 'fit.id'] %>% as.numeric() %>% fit_all[[.]] -> best_fit
+
+  rbind(step_res %>% dplyr::filter(fit.id == 1), step_res) %>% as_tibble() -> all_res
+  if(output == "best_fit"){best_fit %>% return()} else{list("best_fit" = best_fit, "all_res" = all_res) %>% return()}
+}
+
+
+
 #' @title Build a piecewiseSEM formula from fitted models
-#' @description Builds a piecewiseSEM formula from one or more fitted models.
-#' The first model defines the main response. Additional models may be
-#' supplied as a list. Predictor levels control the order of indirect paths.
+#' @description Builds a piecewiseSEM formula from fitted models.
 #'
 #' @param fit A fitted `lmer` model, or a list whose first element is a fitted
 #' `lmer` model.
-#' @param sem.f Formula-building mode, optionally including step or full .
+#' @param sem.f Formula-building mode.
 #' @param sem.data Data used to fit the SEM.
 #' @param x.level1 Predictors in the first path level.
 #' @param x.level2 Predictors in the second path level.
 #' @param x.level3 Predictors in the third path level.
-#' @param corr Whether to include correlations among predictors in the same
-#' level.
+#' @param corr Whether to include within-level correlations.
 #' @return A list containing a formula string and model data.
 #'
 #' @examples
@@ -24,7 +68,7 @@
 #'
 
 y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.level2 = NULL, x.level3 = NULL, corr = TRUE){
-      # sem.f: way to setup model, see y_fit_step, using grepl to identity;
+      # sem.f: way to setup model, see yy_fit_step, using grepl to identify;
       # 'step_.1', 'step_.05', 'step_aicc' is OK; but 'step_.._full', add all links
       # x.level, distinguish the levels of x; 1 is must, all x but 1,2,3 are 4, max is 4
       # 3 maybe enough, e.g., 1-3 could be vars of plant, soil, microbe, and the y could be EMF
@@ -59,11 +103,11 @@ y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.
 
         if(grepl('step', sem.f)){ifelse(grepl('.1', sem.f) == FALSE & grepl('.05', sem.f) == FALSE, 'aicc', sem.f) -> step; # aicc is default
           suppressMessages(suppressWarnings(x.sub2 %>% imap(~{paste0(.x, " ~ ", paste0(x.level1, collapse = " + "), random)}) %>%
-            set_names(x.sub2) %>% imap(~{lmer(formula = .x, data = df) %>% y_fit_step(., step = step, output = "best_fit")}) -> sub_fit2))
+            set_names(x.sub2) %>% imap(~{lmer(formula = .x, data = df) %>% yy_fit_step(., step = step, output = "best_fit")}) -> sub_fit2))
           suppressMessages(suppressWarnings(x.sub3 %>% imap(~{paste0(.x, " ~ ", paste0(c(x.level1, x.sub2), collapse = " + "), random)}) %>%
-            set_names(x.sub3) %>% imap(~{lmer(formula = .x, data = df) %>% y_fit_step(., step = step, output = "best_fit")}) -> sub_fit3))
+            set_names(x.sub3) %>% imap(~{lmer(formula = .x, data = df) %>% yy_fit_step(., step = step, output = "best_fit")}) -> sub_fit3))
           suppressMessages(suppressWarnings(x.sub4 %>% imap(~{paste0(.x, " ~ ", paste0(c(x.level1, x.sub2, x.sub3), collapse = " + "), random)}) %>%
-            set_names(x.sub4) %>% imap(~{lmer(formula = .x, data = df) %>% y_fit_step(., step = step, output = "best_fit")}) -> sub_fit4))
+            set_names(x.sub4) %>% imap(~{lmer(formula = .x, data = df) %>% yy_fit_step(., step = step, output = "best_fit")}) -> sub_fit4))
 
           c(sub_fit2, sub_fit3, sub_fit4) %>% imap(~{getCall(.x) %>% deparse1() %>% paste0(",")}) %>% unlist() -> sub_fit
           c(sub_fit2, sub_fit3) %>% imap(~{all.vars(stats::formula(.x, fixed.only = T))[-1]}) %>% unlist() %>% unique() %>% .[!. %in% x.sub2] -> x.sub1.new
@@ -97,11 +141,10 @@ y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.
 #' @title Update a piecewiseSEM formula
 #' @description Updates selected paths in an existing piecewiseSEM formula.
 #'
-#' @param sem.formula A piecewiseSEM formula string or a list returned by
-#' y_psem_formula() .
+#' @param sem.formula A formula or a list returned by [y_psem_formula()].
 #' @param sem.data Data used to fit the SEM.
 #' @param id Identifiers of the paths to remove.
-#' @param str Formula update text, such as + x1 - x2 .
+#' @param str Formula update text, such as `"+ x1 - x2"`.
 #' @return A list containing an updated formula and model data.
 #'
 #' @family piecewiseSEM
@@ -142,18 +185,15 @@ y_psem_formula_update <- function(sem.formula, sem.data, id = NULL, str = NULL){
 
 
 #' @title Prune paths from a piecewiseSEM result
-#' @description Removes paths by identifier, variable, p-value or step count.
-#' Paths can be removed by identifier, variable, highest p-value, or a maximum
-#' number of steps.
+#' @description Removes paths from a piecewiseSEM result.
 #'
-#' @param psem.res A result returned by y_psem_boot() .
+#' @param psem.res A result returned by [y_psem_boot()].
 #' @param id Identifiers of the paths to remove.
 #' @param vars Variable names whose paths should be removed.
 #' @param step.n Maximum number of highest-p-value paths to remove.
 #' @param step.p Prune paths until all p-values are below this threshold.
 #' @param corr.p Prune correlations above this p-value threshold.
-#' @param nrep Number of bootstrap replicates; zero fits the model without
-#' bootstrapping.
+#' @param nrep Number of bootstrap replicates; zero disables bootstrapping.
 #' @param show.p Significance threshold used for display.
 #' @param show.est Effect size to plot: standardized or unstandardized.
 #' @return The pruned piecewiseSEM result, invisibly.
@@ -225,15 +265,11 @@ y_psem_step <- function(psem.res, id = NULL, vars = NULL, step.n = NULL, step.p 
 
 #' @title Fit and bootstrap a piecewiseSEM model
 #' @description Fits a piecewiseSEM model with optional bootstrap confidence
-#' intervals. Bootstrap failures are counted and reported. Setting nrep = 0
-#' returns the direct piecewiseSEM fit without bootstrap confidence intervals.
-#' Bootstrap failures are counted and reported. Setting nrep = 0 returns
+#' intervals.
 #'
-#' @param sem.formula A piecewiseSEM formula string or a list returned by
-#' y_psem_formula() .
+#' @param sem.formula A formula or a list returned by [y_psem_formula()].
 #' @param sem.data Data used to fit the SEM.
-#' @param nrep Number of bootstrap replicates; zero fits the model without
-#' bootstrapping.
+#' @param nrep Number of bootstrap replicates; zero disables bootstrapping.
 #' @param show.p Significance threshold used for display.
 #' @param show.est Effect size to plot: standardized or unstandardized.
 #' @param output Output mode; see the function description.
@@ -323,7 +359,7 @@ y_psem_boot <- function(sem.formula, sem.data, nrep = 0, show.p = 0.1, show.est 
             sem.results$Cstat -> Fisher.C
             sem.results$R2 %>% select(nodes = Response, m.R = Marginal) -> RR
             sem.results$coefficients %>% select(nodes = Response, Est = all_of(effect.size), P.Value) %>%
-              mutate(P.sig = cut(P.Value, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "* ", "  "))) -> PP
+              mutate(P.sig = cut(P.Value, breaks = c(-Inf, .01, .05, Inf), labels = c("**", "*", " "))) -> PP
 
           plot(sem.fit0, layout = "tree", alpha = show.p, show = "ustd", digits = 2, return = TRUE) -> sem_graph
 

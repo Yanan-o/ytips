@@ -14,15 +14,13 @@ y_price_part(spe, trt, func.inrr = NULL, pairs.id = NULL)
 \item{func.inrr}{Optional function expression used to transform a sample
 pair.}
 
-\item{pairs.id}{Optional sample-pair identifiers separated by ' vs ' .}
+\item{pairs.id}{Optional sample-pair identifiers separated by \code{" vs "}.}
 }
 \value{
 A data frame of Price-equation components.
 }
 \description{
-Calculates Price-equation components for sample pairs. Splits
-community change into richness, composition, colonization, extinction and
-resident-species effects.
+Calculates Price-equation components for sample pairs.
 }
 \examples{
 spe <- matrix(c(1, 2, 0, 1, 3, 1), nrow = 3,

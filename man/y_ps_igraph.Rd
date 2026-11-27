@@ -37,8 +37,6 @@ An igraph object.
 }
 \description{
 Builds a correlation or SpiecEasi network as an igraph object.
-Uses either pairwise correlations or SpiecEasi to build the network.
-P-values can be adjusted or estimated by taxon shuffling.
 }
 \seealso{
 Other network:

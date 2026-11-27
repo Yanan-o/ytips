@@ -14,13 +14,11 @@ y_psem_boot(
 )
 }
 \arguments{
-\item{sem.formula}{A piecewiseSEM formula string or a list returned by
-y_psem_formula() .}
+\item{sem.formula}{A formula or a list returned by \code{\link[=y_psem_formula]{y_psem_formula()}}.}
 
 \item{sem.data}{Data used to fit the SEM.}
 
-\item{nrep}{Number of bootstrap replicates; zero fits the model without
-bootstrapping.}
+\item{nrep}{Number of bootstrap replicates; zero disables bootstrapping.}
 
 \item{show.p}{Significance threshold used for display.}
 
@@ -33,14 +31,13 @@ A piecewiseSEM fit or a list containing fit results and plot data.
 }
 \description{
 Fits a piecewiseSEM model with optional bootstrap confidence
-intervals. Bootstrap failures are counted and reported. Setting nrep = 0
-returns the direct piecewiseSEM fit without bootstrap confidence intervals.
-Bootstrap failures are counted and reported. Setting nrep = 0 returns
+intervals.
 }
 \seealso{
 Other piecewiseSEM:
 \code{\link[=y_psem_formula]{y_psem_formula()}},
 \code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
-\code{\link[=y_psem_step]{y_psem_step()}}
+\code{\link[=y_psem_step]{y_psem_step()}},
+\code{\link[=yy_fit_step]{yy_fit_step()}}
 }
 \concept{piecewiseSEM}

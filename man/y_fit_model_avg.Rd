@@ -7,27 +7,25 @@
 y_fit_model_avg(fit, fig.name = NULL)
 }
 \arguments{
-\item{fit}{A fitted model accepted by \code{MuMIn::dredge()}.}
+\item{fit}{A fitted model accepted by \code{\link[MuMIn:dredge]{MuMIn::dredge()}}.}
 
 \item{fig.name}{Optional data frame: input labels in column 1 and display
 labels in column 2.}
 }
 \value{
-A named list containing two ggplot objects.
+A list with two ggplot objects: \code{sw} and \code{avg}.
 }
 \description{
-Averages models within three AICc units and plots relative
-importance and coefficients. Models within three AICc units of the best
-model are averaged. The first plot shows relative importance; the second
-shows coefficients.
+Plots coefficients averaged across AICc models within
+\code{delta < 3}.
 }
 \seealso{
 Other fitting:
 \code{\link[=y_descdist]{y_descdist()}},
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
+\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_step]{y_fit_step()}},
 \code{\link[=y_fit_summary]{y_fit_summary()}},
 \code{\link[=y_fit_update]{y_fit_update()}},
 \code{\link[=y_is_outlier]{y_is_outlier()}},

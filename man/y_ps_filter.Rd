@@ -27,10 +27,7 @@ y_ps_filter(
 A filtered phyloseq object.
 }
 \description{
-Removes empty or constant taxa and applies abundance filters.
-Removes empty samples and taxa before applying the abundance and prevalence
-filters. prune = FALSE retains constant taxa. prevalence filters. prune =
-FALSE retains constant taxa.
+Filters and normalises phyloseq data.
 }
 \seealso{
 Other network:
