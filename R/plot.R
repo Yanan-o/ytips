@@ -14,7 +14,7 @@
 #' @param point.size Point size.
 #' @return A ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -73,7 +73,7 @@ y_classplot <- function(df, plot = c('box', 'bar', 'vio', 'viobox', 'line', 'lin
 #' `fig.name`, `error.bar`, `vline`, or `point.size`.
 #' @return A ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -148,7 +148,7 @@ y_fit_classplot <- function(fit, plot = 'box', pairwise = TRUE, p.adjust = 'defa
 #' @param rr.inc Numeric controls for label spacing.
 #' @return A ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -215,7 +215,7 @@ y_fit_linesplot <- function(fit.list, fig.name = NULL, cols = NULL, point.size =
 #' @param txt.position Label position.
 #' @return A ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -247,7 +247,7 @@ y_fit_addline <- function(plot, fit, cols = '#FF0000', size = 1, alpha = 1, show
 #' @return A named list containing the two-predictor surface plot (`xxp`)
 #' and the combined partial plots (`partial.p`).
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -302,7 +302,7 @@ y_fit_surface_plot <- function(fit, fig.name = NULL, fill.lim = NULL, cols = c("
 #' @return A named list with `df_resid`, the model data and residual columns,
 #' and `plot`, a ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -336,7 +336,7 @@ y_fit_partial_plot <- function(fit, x.fixed = "", fig.name = NULL, ...){
 #' @return A named list with `df_p`, containing the relative explanatory power
 #' and labels, and `plot`, a ggplot object.
 #'
-#' @family plotting
+#' @family fit-plot
 #' @export
 #'
 
@@ -391,7 +391,6 @@ y_fit_decomposition_plot <- function(fit, y1 = "", y2 = "", name.yy = c(y1, y2))
 #' )
 #' y_corrplot(cor)
 #'
-#' @family plotting
 #' @export
 #'
 

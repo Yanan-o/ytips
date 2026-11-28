@@ -42,16 +42,12 @@ Plots a numeric response by groups for box, bar, violin, line
 and combined group plots.
 }
 \seealso{
-Other plotting:
-\code{\link[=color_y]{color_y()}},
-\code{\link[=theme_y]{theme_y()}},
-\code{\link[=y_corrplot]{y_corrplot()}},
+Other fit-plot:
 \code{\link[=y_fit_addline]{y_fit_addline()}},
 \code{\link[=y_fit_classplot]{y_fit_classplot()}},
 \code{\link[=y_fit_decomposition_plot]{y_fit_decomposition_plot()}},
 \code{\link[=y_fit_linesplot]{y_fit_linesplot()}},
 \code{\link[=y_fit_partial_plot]{y_fit_partial_plot()}},
-\code{\link[=y_fit_surface_plot]{y_fit_surface_plot()}},
-\code{\link[=y_ggsave]{y_ggsave()}}
+\code{\link[=y_fit_surface_plot]{y_fit_surface_plot()}}
 }
-\concept{plotting}
+\concept{fit-plot}

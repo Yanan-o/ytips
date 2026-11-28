@@ -19,9 +19,4 @@ Invisibly returns \code{TRUE} when all packages are available.
 \description{
 Checks required packages and reports missing ones.
 }
-\seealso{
-Other utilities:
-\code{\link[=onedrive]{onedrive()}}
-}
-\concept{utilities}
 \keyword{internal}

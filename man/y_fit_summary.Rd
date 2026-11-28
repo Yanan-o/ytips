@@ -25,15 +25,10 @@ y_fit_summary(fit)$Est.txt
 
 }
 \seealso{
-Other fitting:
-\code{\link[=y_descdist]{y_descdist()}},
+Other fit-summary:
 \code{\link[=y_fit_estplot]{y_fit_estplot()}},
-\code{\link[=y_fit_model_avg]{y_fit_model_avg()}},
-\code{\link[=y_fit_models_rank]{y_fit_models_rank()}},
 \code{\link[=y_fit_msetable]{y_fit_msetable()}},
 \code{\link[=y_fit_predict]{y_fit_predict()}},
-\code{\link[=y_fit_update]{y_fit_update()}},
-\code{\link[=y_is_outlier]{y_is_outlier()}},
-\code{\link[=y_random_forest_plot]{y_random_forest_plot()}}
+\code{\link[=y_fit_update]{y_fit_update()}}
 }
-\concept{fitting}
+\concept{fit-summary}

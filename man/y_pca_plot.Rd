@@ -32,22 +32,11 @@ if (requireNamespace("vegan", quietly = TRUE)) {
 }
 \seealso{
 Other ordination:
-\code{\link[=y_alpha_diversity]{y_alpha_diversity()}},
-\code{\link[=y_beta_indispecies]{y_beta_indispecies()}},
-\code{\link[=y_beta_part]{y_beta_part()}},
-\code{\link[=y_beta_simper]{y_beta_simper()}},
 \code{\link[=y_cca_plot]{y_cca_plot()}},
 \code{\link[=y_db_rda_plot]{y_db_rda_plot()}},
 \code{\link[=y_nmds_plot]{y_nmds_plot()}},
 \code{\link[=y_pcoa_plot]{y_pcoa_plot()}},
-\code{\link[=y_price_part]{y_price_part()}},
-\code{\link[=y_price_part_plot]{y_price_part_plot()}},
-\code{\link[=y_ps_to_spe]{y_ps_to_spe()}},
 \code{\link[=y_rda_plot]{y_rda_plot()}},
-\code{\link[=y_rdacca_hp]{y_rdacca_hp()}},
-\code{\link[=yy_adonis_summary]{yy_adonis_summary()}},
-\code{\link[=yy_anova_cca_summary]{yy_anova_cca_summary()}},
-\code{\link[=yy_envfit_arrow]{yy_envfit_arrow()}},
-\code{\link[=yy_ord_plot]{yy_ord_plot()}}
+\code{\link[=y_rdacca_hp]{y_rdacca_hp()}}
 }
 \concept{ordination}

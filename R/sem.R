@@ -9,7 +9,7 @@
 #' @return A fitted model when `output = "best_fit"`; otherwise a list with
 #' `best_fit` and `all_res`.
 #'
-#' @family piecewiseSEM
+#' @family sem-formula
 #' @keywords internal
 #'
 
@@ -64,7 +64,7 @@ yy_fit_step <- function(fit, step = "aicc", output = "all"){
 #'  formula <- y_psem_formula(fit, x.level1 = "treatment")
 #' }
 #'
-#' @family piecewiseSEM
+#' @family sem-formula
 #' @export
 #'
 
@@ -148,7 +148,7 @@ y_psem_formula <- function(fit, sem.f = '', sem.data = NULL, x.level1 = NULL, x.
 #' @param str Formula update text, such as `"+ x1 - x2"`.
 #' @return A list containing an updated formula and model data.
 #'
-#' @family piecewiseSEM
+#' @family sem-formula
 #' @export
 #'
 
@@ -199,7 +199,7 @@ y_psem_formula_update <- function(sem.formula, sem.data, id = NULL, str = NULL){
 #' @param show.est Effect size to plot: standardized or unstandardized.
 #' @return The pruned piecewiseSEM result, invisibly.
 #'
-#' @family piecewiseSEM
+#' @family sem-formula
 #' @export
 #'
 
@@ -276,7 +276,7 @@ y_psem_step <- function(psem.res, id = NULL, vars = NULL, step.n = NULL, step.p 
 #' @param output Output mode; see the function description.
 #' @return A piecewiseSEM fit or a list containing fit results and plot data.
 #'
-#' @family piecewiseSEM
+#' @family sem-formula
 #' @export
 #'
 

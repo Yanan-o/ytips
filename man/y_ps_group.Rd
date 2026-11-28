@@ -36,16 +36,10 @@ A data frame describing grouped taxa.
 Groups taxa and optionally collapses small groups into Others.
 }
 \seealso{
-Other network:
+Other ps-data:
 \code{\link[=y_ps]{y_ps()}},
 \code{\link[=y_ps_bar]{y_ps_bar()}},
 \code{\link[=y_ps_filter]{y_ps_filter()}},
-\code{\link[=y_ps_igraph]{y_ps_igraph()}},
-\code{\link[=y_ps_network]{y_ps_network()}},
-\code{\link[=yy_network_modularity]{yy_network_modularity()}},
-\code{\link[=yy_network_module_plot]{yy_network_module_plot()}},
-\code{\link[=yy_network_plot]{yy_network_plot()}},
-\code{\link[=yy_network_properties]{yy_network_properties()}},
-\code{\link[=yy_network_zipi]{yy_network_zipi()}}
+\code{\link[=y_ps_to_spe]{y_ps_to_spe()}}
 }
-\concept{network}
+\concept{ps-data}

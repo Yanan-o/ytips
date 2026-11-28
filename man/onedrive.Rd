@@ -27,8 +27,3 @@ onedrive("Y.R/Y.tips.R")
 }
 
 }
-\seealso{
-Other utilities:
-\code{\link[=yy_check_pkg]{yy_check_pkg()}}
-}
-\concept{utilities}

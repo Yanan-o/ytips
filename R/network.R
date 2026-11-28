@@ -38,7 +38,7 @@
 #'  ps <- y_ps(otu.df, sample.df, taxa.df)
 #' }
 #'
-#' @family network
+#' @family ps-data
 #' @export
 #'
 
@@ -72,7 +72,7 @@ y_ps <- function(otu.df, sample.df, taxa.df = NULL, rarefy = FALSE){
 #' @param prune Whether to remove zero-variance taxa.
 #' @return A filtered phyloseq object.
 #'
-#' @family network
+#' @family ps-data
 #' @export
 #'
 
@@ -126,7 +126,7 @@ y_ps_filter <- function(ps, filter.n = 0, filter.r.abun = 0, filter.sample = c(0
 #' @param output Output mode; see the function description.
 #' @return A data frame describing grouped taxa.
 #'
-#' @family network
+#' @family ps-data
 #' @export
 #'
 
@@ -183,7 +183,7 @@ y_ps_group <- function(ps, group = "", method = 'r.abun', max.group = 8, rank = 
 #' @param fit.m Model expression used to test group differences.
 #' @return A ggplot object.
 #'
-#' @family network
+#' @family ps-data
 #' @export
 #'
 
@@ -404,7 +404,6 @@ y_ps_igraph <- function(ps, r.threshold = 0.7, p.threshold = 0.05, r.method = 's
 #' @param layout.size Layout scaling values.
 #' @return A list containing node and edge tables, invisibly.
 #'
-#' @family network
 #' @keywords internal
 #'
 
@@ -541,7 +540,6 @@ yy_network_plot <- function(igraph, c.group = NULL, v.group = NULL, v.size = NUL
 #' @param m.gamma Leiden resolution parameter.
 #' @return An igraph community-detection result.
 #'
-#' @family network
 #' @keywords internal
 #'
 
@@ -563,7 +561,6 @@ yy_network_modularity <- function(igraph, m.gamma = 0){
 #' @param m.gamma Leiden resolution parameter.
 #' @return A list containing a Zi-Pi plot and role table.
 #'
-#' @family network
 #' @keywords internal
 #'
 
@@ -617,7 +614,6 @@ yy_network_zipi <- function(igraph, cols.df = NULL, pchs.df = NULL, m.gamma = 0)
 #' @param n.hub Whether to return hub information.
 #' @return A data frame of global network properties.
 #'
-#' @family network
 #' @keywords internal
 #'
 
@@ -679,7 +675,6 @@ yy_network_properties <- function(igraph, m.gamma = 0, n.hub = FALSE){
 #' @param module.id Optional module identifiers.
 #' @return A ggplot object.
 #'
-#' @family network
 #' @keywords internal
 #'
 

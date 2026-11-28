@@ -22,10 +22,9 @@ A list containing an updated formula and model data.
 Updates selected paths in an existing piecewiseSEM formula.
 }
 \seealso{
-Other piecewiseSEM:
+Other psem:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula]{y_psem_formula()}},
-\code{\link[=y_psem_step]{y_psem_step()}},
-\code{\link[=yy_fit_step]{yy_fit_step()}}
+\code{\link[=y_psem_step]{y_psem_step()}}
 }
-\concept{piecewiseSEM}
+\concept{psem}

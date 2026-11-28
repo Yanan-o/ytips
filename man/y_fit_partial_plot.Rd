@@ -28,16 +28,12 @@ Residualizes the response and focal predictor against other
 fixed effects, then plots their relationship.
 }
 \seealso{
-Other plotting:
-\code{\link[=color_y]{color_y()}},
-\code{\link[=theme_y]{theme_y()}},
+Other fit-plot:
 \code{\link[=y_classplot]{y_classplot()}},
-\code{\link[=y_corrplot]{y_corrplot()}},
 \code{\link[=y_fit_addline]{y_fit_addline()}},
 \code{\link[=y_fit_classplot]{y_fit_classplot()}},
 \code{\link[=y_fit_decomposition_plot]{y_fit_decomposition_plot()}},
 \code{\link[=y_fit_linesplot]{y_fit_linesplot()}},
-\code{\link[=y_fit_surface_plot]{y_fit_surface_plot()}},
-\code{\link[=y_ggsave]{y_ggsave()}}
+\code{\link[=y_fit_surface_plot]{y_fit_surface_plot()}}
 }
-\concept{plotting}
+\concept{fit-plot}

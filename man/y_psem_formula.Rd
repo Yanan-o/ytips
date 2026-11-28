@@ -43,10 +43,9 @@ Builds a piecewiseSEM formula from one or more fitted models.
 
 }
 \seealso{
-Other piecewiseSEM:
+Other psem:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
-\code{\link[=y_psem_step]{y_psem_step()}},
-\code{\link[=yy_fit_step]{yy_fit_step()}}
+\code{\link[=y_psem_step]{y_psem_step()}}
 }
-\concept{piecewiseSEM}
+\concept{psem}

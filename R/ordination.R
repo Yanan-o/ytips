@@ -69,7 +69,7 @@
 #' @param output Output mode; see the function description.
 #' @return A community matrix or a list of converted data.
 #'
-#' @family ordination
+#' @family ps-data
 #' @export
 #'
 
@@ -96,7 +96,7 @@ y_ps_to_spe <- function(ps, i.trt = 1, i.env = NULL, output = 'spe'){
 #' @param spe A community matrix with samples in rows.
 #' @return A data frame of alpha-diversity metrics.
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -129,7 +129,7 @@ y_alpha_diversity <- function(spe){
 #' price <- y_price_part(spe)
 #' y_price_part_plot(price)
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -189,7 +189,7 @@ y_price_part <- function(spe, trt, func.inrr = NULL, pairs.id = NULL){
 #' @param show Whether to show all paths or only the mean path.
 #' @return A ggplot object.
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -248,7 +248,7 @@ y_price_part_plot <- function(price.df, price = 5, cols = NULL, xlim = NULL, sho
 #'  beta <- y_beta_part(spe, trt)
 #' }
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -305,7 +305,7 @@ y_beta_part <- function(spe, trt, pairs.id = NULL){
 #' `show.adonis = TRUE`, including `show.p` or `rr.inc`.
 #' @return A named list with `simper.res`, `simper.res.mean`, and `plot`.
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -348,7 +348,7 @@ y_beta_simper <- function(spe, trt, pairs.id = NULL, cols = NULL, ylim = 1,
 #' @return A named list with `indval.res`, the indicator-species significance
 #' table, and `plot`, a ggplot object.
 #'
-#' @family ordination
+#' @family diversity
 #' @export
 #'
 
@@ -384,7 +384,6 @@ y_beta_indispecies <- function(spe, trt){
 #' @param rr.inc Numeric controls for label spacing.
 #' @return A list containing formatted PERMANOVA labels.
 #'
-#' @family ordination
 #' @keywords internal
 #'
 
@@ -421,7 +420,6 @@ yy_adonis_summary <- function(spe, trt, show.p = 0.05, show.p.pairs = c('', 'CK'
 #' @param model.ord An ordination model returned by vegan.
 #' @return A list containing formatted test labels and arrow colors.
 #'
-#' @family ordination
 #' @keywords internal
 #'
 
@@ -448,7 +446,6 @@ yy_anova_cca_summary <- function(model.ord){
 #' @param env Environmental variables.
 #' @return A data frame of projected environmental arrows.
 #'
-#' @family ordination
 #' @keywords internal
 #'
 
@@ -524,7 +521,6 @@ y_rdacca_hp <- function(spe, env, env.list = NULL, method =  c('RDA', 'dbRDA', '
 #' @param show.density Whether to add marginal density plots.
 #' @return A ggplot object.
 #'
-#' @family ordination
 #' @keywords internal
 #'
 

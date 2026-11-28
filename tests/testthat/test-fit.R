@@ -229,16 +229,18 @@ test_that("y_fit_summary supports plain lme4 models", {
   expect_named(result$rr, c("Rm", "Rc"))
 })
 
-test_that("y_fit_msetable returns readable R-squared text", {
+test_that("y_fit_msetable appends numeric R-squared columns", {
   lm_table <- y_fit_msetable(stats::lm(mpg ~ wt + hp, data = mtcars))
-  expect_match(lm_table$R2, "^R2 = ")
+  expect_named(lm_table, c("wt", "hp", "R2"))
+  expect_type(lm_table$R2, "double")
 
   lmer_table <- y_fit_msetable(lme4::lmer(
     Reaction ~ Days + (1 | Subject),
     data = lme4::sleepstudy
   ))
-  expect_match(lmer_table$R2, "^Rm = ")
-  expect_match(lmer_table$R2, "; Rc = ")
+  expect_named(lmer_table, c("Days", "Rm", "Rc"))
+  expect_type(lmer_table$Rm, "double")
+  expect_type(lmer_table$Rc, "double")
 })
 
 test_that("y_fit_estplot draws the random-forest overlay", {

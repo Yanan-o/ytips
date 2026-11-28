@@ -14,7 +14,6 @@
 #' onedrive("Y.R/Y.tips.R")
 #' }
 #'
-#' @family utilities
 #' @export
 #'
 

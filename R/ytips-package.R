@@ -62,7 +62,6 @@ yy_pkg_available <- function(pkg){
 #' @param install.hint Optional installation command.
 #' @param ask Whether to ask before installing.
 #' @return Invisibly returns `TRUE` when all packages are available.
-#' @family utilities
 #' @keywords internal
 #'
 

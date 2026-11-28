@@ -6,7 +6,7 @@
 #' @param discrete Logical; whether `x` contains discrete counts.
 #' @return The distribution-diagnostic result.
 #'
-#' @family fitting
+#' @family diagnostics
 #' @export
 #'
 
@@ -32,7 +32,7 @@ y_descdist <- function(x, discrete = FALSE){
 #' the nearest boundary.
 #' @return A logical or numeric vector, depending on `action`.
 #'
-#' @family fitting
+#' @family diagnostics
 #' @export
 #'
 
@@ -66,7 +66,7 @@ y_is_outlier <- function(x, multiplier = 3, action = c("flag", "na", "winsorize"
 #' fit <- lm(mpg ~ wt + hp, data = mtcars)
 #' y_fit_summary(fit)$Est.txt
 #'
-#' @family fitting
+#' @family fit-summary
 #' @export
 #'
 
@@ -120,7 +120,7 @@ y_fit_summary <- function(fit){
 #' @param diagnostics Whether to draw model residual diagnostics.
 #' @return A ggplot object.
 #'
-#' @family fitting
+#' @family fit-summary
 #' @export
 #'
 
@@ -161,16 +161,17 @@ y_fit_estplot <- function(fit, fig.name = NULL, show.random.forest = FALSE, rr.i
 
 
 #' @title Build a wide fitted-model table
-#' @description Builds a one-row coefficient table with an R-squared column.
+#' @description Builds a one-row coefficient table with R-squared columns.
 #'
 #' @param fit A fitted model accepted by [y_fit_summary()]. `show = "mse"`
 #' requires one categorical predictor.
 #' @param digits Number of decimal places.
 #' @param show `"est"` displays coefficient estimates with significance marks;
 #' `"mse"` displays observed group means and standard errors.
-#' @return A one-row wide data frame.
+#' @return A one-row wide data frame with numeric `R2`, or `Rm` and `Rc` for
+#' mixed models.
 #'
-#' @family fitting
+#' @family fit-summary
 #' @export
 #'
 
@@ -195,9 +196,8 @@ y_fit_msetable <- function(fit, digits = 2, show = c("est", "mse")){
       data.frame(x = as.character(mse$x), mean = mse$mean, se = mse$se) %>% dplyr::left_join(est, by = "x") %>%
 	      mutate(value = ifelse(is.na(value), paste0(formatC(mean, format = "f", digits = digits), " \u00b1 ", formatC(se, format = "f", digits = digits)), value)) -> df_table } }
 
-  paste0(names(fit_res$rr), " = ", formatC(unlist(fit_res$rr), format = "f", digits = digits), collapse = "; ") -> R2
   as.data.frame(as.list(setNames(df_table$value, df_table$x)), check.names = FALSE) %>%
-    mutate(R2 = R2) %>% return()
+    bind_cols(fit_res$rr) %>% remove_rownames() %>% return()
 }
 
 
@@ -211,7 +211,7 @@ y_fit_msetable <- function(fit, digits = 2, show = c("est", "mse")){
 #' @param re_formula `NA` excludes random effects; `NULL` includes them.
 #' @return A data frame containing fitted values and intervals.
 #'
-#' @family fitting
+#' @family fit-summary
 #' @export
 #'
 
@@ -240,7 +240,7 @@ y_fit_predict <- function(fit, newdata = NULL, re_formula = NA){
 #' @param x.order Optional fixed-effect term order.
 #' @return An updated fitted model.
 #'
-#' @family fitting
+#' @family fit-summary
 #' @export
 #'
 
@@ -282,7 +282,7 @@ y_fit_update <- function(fit, str = '', x.order = NULL){
 #' result <- y_fit_models_rank(fit, top = 5)
 #' result$fit_rank
 #'
-#' @family fitting
+#' @family model-select
 #' @export
 #'
 
@@ -323,7 +323,7 @@ y_fit_models_rank <- function(fit, rank = "AICc", top = 10){
 #' labels in column 2.
 #' @return A list with `sw` (relative importance) and `avg` (coefficients).
 #'
-#' @family fitting
+#' @family model-select
 #' @export
 #'
 
@@ -369,7 +369,7 @@ y_fit_model_avg <- function(fit, fig.name = NULL){
 #' @param output Output mode; see the function description.
 #' @return A ggplot object or a list containing importance results.
 #'
-#' @family fitting
+#' @family model-select
 #' @export
 #'
 

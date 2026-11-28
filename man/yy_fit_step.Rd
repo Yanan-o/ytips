@@ -22,12 +22,4 @@ A fitted model when \code{output = "best_fit"}; otherwise a list with
 Fits predictor subsets and ranks them by AICc or p-value
 thresholds.
 }
-\seealso{
-Other piecewiseSEM:
-\code{\link[=y_psem_boot]{y_psem_boot()}},
-\code{\link[=y_psem_formula]{y_psem_formula()}},
-\code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
-\code{\link[=y_psem_step]{y_psem_step()}}
-}
-\concept{piecewiseSEM}
 \keyword{internal}

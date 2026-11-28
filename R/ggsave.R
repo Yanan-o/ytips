@@ -7,7 +7,7 @@
 #' @examples
 #' color_y(4)
 #' color_y(4:5, colbar = 2)
-#' @family plotting
+#' @family plot-tools
 #' @export
 #'
 
@@ -29,7 +29,7 @@ color_y <- function(n, colbar = 3){
 #' @examples
 #' library(ggplot2)
 #' ggplot(mtcars, aes(wt, mpg)) + geom_point() + theme_y()
-#' @family plotting
+#' @family plot-tools
 #' @export
 #'
 
@@ -73,7 +73,7 @@ no_axis_x_title <- ggplot2::theme(axis.title.x = ggplot2::element_blank())
 #' library(ggplot2)
 #' p <- ggplot(mtcars, aes(wt, mpg)) + geom_point()
 #' y_ggsave(p, save = FALSE)
-#' @family plotting
+#' @family plot-tools
 #' @export
 #'
 

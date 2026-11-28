@@ -42,10 +42,9 @@ The pruned piecewiseSEM result, invisibly.
 Removes paths from a piecewiseSEM result.
 }
 \seealso{
-Other piecewiseSEM:
+Other psem:
 \code{\link[=y_psem_boot]{y_psem_boot()}},
 \code{\link[=y_psem_formula]{y_psem_formula()}},
-\code{\link[=y_psem_formula_update]{y_psem_formula_update()}},
-\code{\link[=yy_fit_step]{yy_fit_step()}}
+\code{\link[=y_psem_formula_update]{y_psem_formula_update()}}
 }
-\concept{piecewiseSEM}
+\concept{psem}
